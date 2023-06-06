@@ -36,6 +36,8 @@ options
                  depending on the optional modifier
                  d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T
  -b secret     : base32 secret
+ -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours)
+ -q N[h|m]     : quit after N seconds (minutes, hours)
  -h            : Show this help
 </pre>
 

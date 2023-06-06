@@ -172,6 +172,8 @@ void usage(){
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 //		" -n ip         : use ntpc time, from ip\n"
 		" -b secret     : base32 secret \n"
+		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress\n"
+		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
@@ -247,14 +249,14 @@ int main(int argc, char **argv, char **envp){
 
 	time_t now;
 	uint32_t opts = 0;
-	enum options_chars { opt_t,opt_n,opt_s,opt_b,opt_T };
+	enum options_chars { opt_s,opt_q };
 	uint8_t in[64],k[64];
 	uchar *p_in = in;
 	uchar buf[64];
 	bzero(k,64);
 	bzero(in,64);
 	uint len,klen=0,r,r2,b32len=0;
-	int ret = 0, res;
+	int ret = 0, res, timeout=0,timeoutsec;
 
 	struct termios oldSettings, newSettings;
 	char c,c2;
@@ -273,11 +275,17 @@ int main(int argc, char **argv, char **envp){
 				switch (*opt) {
 					case 's':
 						opts |= OPT(s);
+						*argv++;
+						timeout = stol(*argv);
+						break;
+					case 'q':
+						opts |= OPT(q);
+						*argv++;
+						timeout = stol(*argv);
 						break;
 					case 'p':
 						memcpy(in,(uchar*)"JBSWY3DPEHPK3PXP",16);
 						b32len = 16;
-						opts |= OPT(T);
 						break;
 					case 'b':
 						*argv++;
@@ -290,13 +298,11 @@ int main(int argc, char **argv, char **envp){
 						break;
 					case 'd': // diff, in seconds
 						*argv++;
-						if ( *argv )
-							diffsecs += stol(*argv);
+						diffsecs += stol(*argv);
 						break;
 					case 't':
 						*argv++;
-						if ( *argv )
-							diffsecs += stol(*argv);
+						diffsecs += stol(*argv);
 						now = time(0);
 						diffsecs -= now;
 						break;
@@ -370,6 +376,7 @@ RESTART:
 
 SETTIMER:
 	setitimer( ITIMER_REAL, &it, 0 );
+	timeoutsec = timeout;
 
 
 #define X(y) #y
@@ -409,60 +416,78 @@ LOOP:
 		printf(AC_NORM"%06d      %06d\n\n"AC_NORM, r,r2);
 
 		while( seconds < 30 ){ // this isn't 100% exact.
-	  // however, in each case, also the waitloop,
-	  // will take at least until the next 30 seconds period begins
-	  // (at least).
-	
-			printf( "\e[04D\e[1A"AC_YELLOW"%2d\n"AC_NORM,29-seconds);
+									  // however, in each case, also the waitloop,
+									  // will take at least until the next 30 seconds period begins
+									  // (at least).
+
+			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-seconds);
+			if ( timeoutsec )
+				printf( "         " AC_BLUE " (%d)    \n"AC_NORM, timeoutsec );
+			else 
+				printf("\n");
 
 			tv.tv_sec = 1; tv.tv_usec = 0;
 			res = select(1,&set, NULL,NULL, &tv );
 
 			if ( res > 0 ){ // got a key
+				timeoutsec = timeout; // restart timeout
 				read(0,buf,32);
-				switch(buf[0]){
-					case 'q':
-						exit(0);
-					case 'r':
-						tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
-						goto RESTART;
-					case 'l':
-						up();
-						goto LOOP;
-					case 's':
-						cls(); home();
-						P( "totp - stopped\n" );
-						setitimer( ITIMER_REAL, 0, 0 );
-						bzero(k,sizeof(k));
-						select(1,&set,0,0,0);
-						read(0,buf,32);
-						if ( buf[0] == 'q' )
-							exit(0);
-						tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
-						goto RESTART;
-					case 'p':
-						P("(pause)");
-						setitimer( ITIMER_REAL, 0, 0 );
-						select(1,&set,0,0,0);
-						read(0,buf,32);
-						if ( buf[0] == 'q' )
-							exit(0);
-						goto SETTIMER;
-					case 'c':
-						P("Copy Current");   
-						left(16);
-						xclip(r);
-						clsec = 3;
-						break;
-					case 'n':
-						P("Copy Next");  
-						left(16);
-						xclip(r2);
-						clsec = 3;
+			} else buf[0] = 0;
+
+			if ( timeoutsec ){
+				timeoutsec -- ;
+				if ( timeoutsec == 0 ){
+					if ( opts & OPT(s) )
+						buf[0] = 's';
+					else if ( opts & OPT(q) )
+						buf[0] = 'q';
 				}
-				sleep(1); // aborted by sigalarm
 			}
+
+			switch(buf[0]){
+				case 'q':
+					exit(0);
+				case 'r':
+					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
+					goto RESTART;
+				case 'l':
+					up();
+					goto LOOP;
+				case 's':
+					cls(); home();
+					P( "totp - stopped\n" );
+					setitimer( ITIMER_REAL, 0, 0 );
+					bzero(k,sizeof(k));
+					select(1,&set,0,0,0);
+					read(0,buf,32);
+					if ( buf[0] == 'q' )
+						exit(0);
+					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
+					goto RESTART;
+				case 'p':
+					P("(pause)");
+					setitimer( ITIMER_REAL, 0, 0 );
+					select(1,&set,0,0,0);
+					read(0,buf,32);
+					if ( buf[0] == 'q' )
+						exit(0);
+					goto SETTIMER;
+				case 'c':
+					P("Copy Current");   
+					left(16);
+					xclip(r);
+					clsec = 3;
+					break;
+				case 'n':
+					P("Copy Next");  
+					left(16);
+					xclip(r2);
+					clsec = 3;
+			}
+			if ( buf[0] != 0 )
+				sleep(1); // aborted by sigalarm
 			seconds ++;
+
 			if ( clsec ){
 				if ( clsec==1 )
 					P("\e[2K");

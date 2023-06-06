@@ -465,6 +465,7 @@ LOOP:
 					P( "totp - stopped\n" );
 					setitimer( ITIMER_REAL, 0, 0 );
 					bzero(k,sizeof(k));
+					r=0;r2=0;
 					select(1,&set,0,0,0);
 					read(0,buf,32);
 					if ( buf[0] == 'q' )

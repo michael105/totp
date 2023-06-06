@@ -18,6 +18,8 @@ This needs currently 64bit instructions,
 and is tested only with linux.
 
 
+The system time needs either to be set to UTC,
+or the according time difference has to be supplied. (e.g. totp -d +2h)
 
 
 

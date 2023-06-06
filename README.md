@@ -37,6 +37,7 @@ options
                  d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T
  -b secret     : base32 secret
  -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress
+                 and erase all secrets.
                  Default ist 5 minutes, -s 0 disables the timeout
  -q N[h|m]     : quit after N seconds (minutes, hours)
  -h            : Show this help

@@ -174,6 +174,7 @@ void usage(){
 //		" -n ip         : use ntpc time, from ip\n"
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress\n"
+		"                 Default ist 5 minutes, -s 0 disables the timeout\n"
 		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
@@ -200,7 +201,7 @@ void xclip(uint token){
 		close(fd[1]);
 		dup(fd[0]);
 		execlp("xclip",0);
-		write(2,"Error (xclip not found)\n\n\n",26);
+		write(2,"Error (xclip not found)\n\n",25);
 		exit(1);
 	}
 	close(fd[0]);
@@ -248,26 +249,28 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-	time_t now;
-	uint32_t opts = 0;
+#define OPT(x) (1<<opt_##x)
 	enum options_chars { opt_s,opt_q };
+	uint32_t opts = OPT(s);
+
 	uint8_t in[64],k[64];
 	uchar *p_in = in;
 	uchar buf[64];
 	bzero(k,64);
 	bzero(in,64);
 	uint len,klen=0,r,r2,b32len=0;
-	int ret = 0, res, timeout=0,timeoutsec;
+	int ret = 0, res, timeoutsec;
+	int timeout = 5*60; // default 5 minutes timeout
 
 	struct termios oldSettings, newSettings;
 	char c,c2;
 
+	time_t now;
 	struct timeval tv;
 	int64_t diffsecs = 0; //x64
 	// would also be possible: uint32 - caculate with overflow.
 	// -30 = UINTMAX-30
 
-#define OPT(x) (1<<opt_##x)
 	
 
 	*argv++;
@@ -422,10 +425,11 @@ LOOP:
 									  // (at least).
 
 			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-seconds);
-			if ( timeoutsec )
-				printf( "         " AC_BLUE " (%d)    \n"AC_NORM, timeoutsec );
-			else 
-				printf("\n");
+			if ( timeout && timeoutsec<60 )
+				printf( "         " AC_GREY " (%d)    \n"AC_NORM, timeoutsec );
+			else {
+				printf("\e[0K\n");
+			}
 
 			buf[0] = 0;
 			tv.tv_sec = 1; tv.tv_usec = 0;
@@ -435,9 +439,9 @@ LOOP:
 				timeoutsec = timeout; // restart timeout
 				read(0,buf,32);
 			} else {
-				if ( timeoutsec ){
+				if ( timeout ){
 					timeoutsec -- ;
-					if ( timeoutsec == 0 ){
+					if ( timeoutsec < 0 ){
 						if ( opts & OPT(s) )
 							buf[0] = 's';
 						else if ( opts & OPT(q) )

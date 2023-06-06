@@ -38,6 +38,8 @@ return
 #define AC_BLUE "\e[34m"
 #define AC_GREY "\e[1;30m"
 typedef unsigned char uchar;
+typedef unsigned int uint;
+typedef unsigned long ulong;
 #define BSWAP(x) asm("bswap %0": "+r"(x));
 #endif
 

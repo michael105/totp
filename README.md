@@ -22,6 +22,24 @@ The system time needs either to be set to UTC,
 or the according time difference has to be supplied. (e.g. totp -d +2h)
 
 
+<code>
+# totp -h
+
+totp [-t time] [-T time] [-d diff] [-b secret] [-h]   Calculate 2fa otp tokens.
+reads the base32 secret from stdin per default
+options
+ -t time       : time in seconds since 1970
+ -T hh:mm[:ss] : time
+ -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/dayys to the current time,
+                 depending on the optional modifier
+                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T
+ -b secret     : base32 secret
+ -h            : Show this help
+</code>
+
+
 
 miSc 2023, Michael Myer, GPL
+
+www.github.com/michael105/totp
 

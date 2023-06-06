@@ -162,16 +162,17 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 void usage(){
 	
-	W( "totp [-t time] [-svh]   Calculate 2fa otp tokens.\n"
+	W( "totp [-t time] [-T time] [-d diff] [-b secret] [-h]   Calculate 2fa otp tokens.\n"
 		"reads the base32 secret from stdin per default\n"
 		"options\n"
 		" -t time       : time in seconds since 1970\n"
 		" -T hh:mm[:ss] : time\n"
-		" -d [-]n[d|h|m]: add [-]n seconds to the current time, with optional modifier\n"
+		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/dayys to the current time,\n"
+		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 //		" -n ip         : use ntpc time, from ip\n"
 		" -b secret     : base32 secret \n"
-		" -s            : calculate current token, and exit\n"
+//		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
 		"Michael (miSc) Myer, 2023, GPL\n"

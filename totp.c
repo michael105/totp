@@ -35,6 +35,7 @@ return
 #define AC_YELLOW "\e[33m"
 #define AC_NORM "\e[1;37;40m"
 #define AC_BLACK "\e[0;30;40m"
+#define AC_BLUE "\e[34m"
 #define AC_GREY "\e[1;30m"
 typedef unsigned char uchar;
 #define BSWAP(x) asm("bswap %0": "+r"(x));
@@ -426,21 +427,22 @@ LOOP:
 			else 
 				printf("\n");
 
+			buf[0] = 0;
 			tv.tv_sec = 1; tv.tv_usec = 0;
 			res = select(1,&set, NULL,NULL, &tv );
 
 			if ( res > 0 ){ // got a key
 				timeoutsec = timeout; // restart timeout
 				read(0,buf,32);
-			} else buf[0] = 0;
-
-			if ( timeoutsec ){
-				timeoutsec -- ;
-				if ( timeoutsec == 0 ){
-					if ( opts & OPT(s) )
-						buf[0] = 's';
-					else if ( opts & OPT(q) )
-						buf[0] = 'q';
+			} else {
+				if ( timeoutsec ){
+					timeoutsec -- ;
+					if ( timeoutsec == 0 ){
+						if ( opts & OPT(s) )
+							buf[0] = 's';
+						else if ( opts & OPT(q) )
+							buf[0] = 'q';
+					}
 				}
 			}
 

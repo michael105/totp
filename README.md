@@ -22,7 +22,7 @@ The system time needs either to be set to UTC,
 or the according time difference has to be supplied. (e.g. totp -d +2h)
 
 
-<code>
+<pre>
 # totp -h
 
 totp [-t time] [-T time] [-d diff] [-b secret] [-h]   Calculate 2fa otp tokens.
@@ -35,7 +35,7 @@ options
                  d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T
  -b secret     : base32 secret
  -h            : Show this help
-</code>
+</pre>
 
 
 

@@ -31,6 +31,10 @@ return
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
+#include <errno.h>
+#include <error.h>
+#include <fcntl.h>
+
 #define AC_LBLUE "\e[34m"
 #define AC_YELLOW "\e[33m"
 #define AC_NORM "\e[1;37;40m"
@@ -105,8 +109,6 @@ int base32d( uchar* to, uchar* from, uint len ){
 #else
 				l2 = (l2 << 5 ) | ( l1>>27 );
 				l1 = (l1<<5) | c;
-
-
 #endif
 			} else { 
 				// end of input / ==
@@ -115,7 +117,6 @@ int base32d( uchar* to, uchar* from, uint len ){
 #else
 				l2 = (l2 << 5 ) | ( l1>>27 );
 				l1 = (l1<<5);
-
 #endif
 				if ( ! retlen )
 					retlen = (( pbuf - from  ) * 5) >> 3;
@@ -144,6 +145,8 @@ int base32d( uchar* to, uchar* from, uint len ){
 uint totp( uint8_t *key, uint keylen, uint64_t step ){
 	uint8_t result[20];
 
+	BSWAP(step);
+
 	hmac_sha1((uchar*)key,keylen,(uchar*)&step,8,result);
 
 	uint offset = result[19] & 0x0f;
@@ -165,9 +168,11 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 void usage(){
 	
-	W( "totp [-t time] [-T time] [-d diff] [-b secret] [-h]   Calculate 2fa otp tokens.\n"
-		"reads the base32 secret from stdin per default\n"
+	W( "totp [-t time] [-T time] [-d diff] [-b secret] [-p pipe] [-h]   Calculate 2fa otp tokens.\n"
+		"\n"
 		"options\n"
+		" -I            : No interactive mode, read the secret from stdin\n"
+		" -p pipename   : read the secret from a named pipe, or a subshell\n"
 		" -t time       : time in seconds since 1970\n"
 		" -T hh:mm[:ss] : time\n"
 		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/dayys to the current time,\n"
@@ -253,7 +258,7 @@ unsigned int tonum(const char *c){
 int main(int argc, char **argv, char **envp){
 
 #define OPT(x) (1<<opt_##x)
-	enum options_chars { opt_s,opt_q };
+	enum options_chars { opt_s,opt_q,opt_I };
 	uint32_t opts = OPT(s);
 
 	uint8_t in[64],k[64];
@@ -271,6 +276,7 @@ int main(int argc, char **argv, char **envp){
 	time_t now;
 	struct timeval tv;
 	int64_t diffsecs = 0; //x64
+	int infd = 0;
 	// would also be possible: uint32 - caculate with overflow.
 	// -30 = UINTMAX-30
 
@@ -280,6 +286,15 @@ int main(int argc, char **argv, char **envp){
 	while ( *argv && ( argv[0][0] == '-' )){
 			for ( char *opt = *argv +1; *opt; *opt++ ){
 				switch (*opt) {
+					case 'I': 
+						opts|=OPT(I);
+						break;
+					case 'p':
+						*argv++;
+						infd = open( *argv, O_RDONLY );
+						if ( infd<=0 )
+							error(1,errno,"Couldn't open %s\n",*argv);
+						break;
 					case 's':
 						opts |= OPT(s);
 						*argv++;
@@ -290,7 +305,7 @@ int main(int argc, char **argv, char **envp){
 						*argv++;
 						timeout = stol(*argv);
 						break;
-					case 'p':
+					case 'c':
 						memcpy(in,(uchar*)"JBSWY3DPEHPK3PXP",16);
 						b32len = 16;
 						break;
@@ -343,11 +358,15 @@ int main(int argc, char **argv, char **envp){
 	void readbase32(){
 		p_in = in;
 		while(1){
-			write(1,"base32: ",8);
-			b32len = read(0,in,64) - 1;
-			up();right(8);
-			cllcright();
-			P("XXX\n");
+
+			if ( !(opts&OPT(I) ) )
+				write(1,"base32: ",8);
+			b32len = read(infd,in,64) - 1;
+			if ( infd == 0 && ! (opts&OPT(I)) ){
+				up();right(8);
+				cllcright();
+				P("XXX\n");
+			}
 
 			if ( validate_base32(in,b32len) )
 				return;
@@ -378,8 +397,9 @@ RESTART:
 	klen = base32d( k,p_in,b32len );
 	bzero( p_in, b32len );
 	b32len = 0;
-
-	tcsetattr( fileno( stdin ), TCSANOW, &newSettings );
+	
+	if ( !(opts&OPT(I) ) )
+		tcsetattr( fileno( stdin ), TCSANOW, &newSettings );
 
 SETTIMER:
 	setitimer( ITIMER_REAL, &it, 0 );
@@ -390,9 +410,13 @@ SETTIMER:
 //#define X(y) AC_MARINE #y AC_NORM
 
 LOOP:
-	P(AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,copy, n=copy "
-			X(n)"ext token," " l=redraw, p=pause, s=stop)\n"
-			AC_LBLUE"Current      Next\n");
+
+	if ( opts&OPT(I) )
+		P( AC_GREY "Ctrl+C to quit\n" );
+	else
+		P( AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,copy, n=copy "
+			X(n)"ext token," " l=redraw, p=pause, s=stop)\n");
+	P( AC_LBLUE"Current      Next\n");
 	do {
 		uint64_t t,seconds;
 		uint clsec = 0;
@@ -420,7 +444,7 @@ LOOP:
 		erasestack(2000);
 
 
-		printf(AC_NORM"%06d      %06d\n\n"AC_NORM, r,r2);
+		printf(AC_NORM"%06d      %06d\n\n", r,r2);
 
 		while( seconds < 30 ){ // this isn't 100% exact.
 									  // however, in each case, also the waitloop,
@@ -435,8 +459,13 @@ LOOP:
 			}
 
 			buf[0] = 0;
+			res=0;
 			tv.tv_sec = 1; tv.tv_usec = 0;
-			res = select(1,&set, NULL,NULL, &tv );
+
+			if ( opts&OPT(I) )
+				sleep(1);
+			else
+				res = select(1,&set, NULL,NULL, &tv );
 
 			if ( res > 0 ){ // got a key
 				timeoutsec = timeout; // restart timeout

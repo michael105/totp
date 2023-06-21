@@ -38,7 +38,7 @@ void cgoto(int col, int row){
 
 #define __CWRITE(s) write(1,"\e[" s, sizeof("\e[" s ) )
 
-// macros. this spares the sprintf, but needs constants with num
+// macros. this spares the sprintf, but needs constants for num
 #define CUP(num) __CWRITE( #num "A" ); 
 #define CDOWN(num) __CWRITE( #num "B" ); 
 #define CRIGHT(num) __CWRITE( #num "C" ); 

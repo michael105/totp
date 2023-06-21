@@ -15,7 +15,7 @@ A million repetitions of "a"
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
 /* #define SHA1HANDSOFF * Copies data before messing with it. */
 
-//#define SHA1HANDSOFF
+#define SHA1HANDSOFF
 #define SHA1CONST
 
 #include <stdio.h>

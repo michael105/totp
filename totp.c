@@ -90,11 +90,7 @@ int base32d( uchar* to, uchar* from, uint len ){
 	int retlen = 0;
 
 	while ( pbuf < from+len ){
-#ifdef x64
 		uint64_t l = 0; // evtl replace with struct i32,i32..
-#else
-		uint32_t l1=0, l2=0;
-#endif
 
 		for ( int a = 0; a<8; a ++ ){
 			char c = *pbuf;
@@ -104,40 +100,24 @@ int base32d( uchar* to, uchar* from, uint len ){
 					c-='A';
 				else
 					c -= 24;
-#ifdef x64
 				l = ( l << 5 ) | c;
-#else
-				l2 = (l2 << 5 ) | ( l1>>27 );
-				l1 = (l1<<5) | c;
-#endif
 			} else { 
 				// end of input / ==
-#ifdef x64
 				l <<= 5;
-#else
-				l2 = (l2 << 5 ) | ( l1>>27 );
-				l1 = (l1<<5);
-#endif
 				if ( ! retlen )
 					retlen = (( pbuf - from  ) * 5) >> 3;
 			}
 			pbuf ++;
 		}
-#ifdef x64
 		BSWAP(l);
 		l >>= 24;
 		*(long*)pobuf = l;
-#else
-		BSWAP(l1);
-		BSWAP(l2);
-		l2 >>= 24;
-		*(uint32_t*)pobuf = l2;
-		*(uint32_t*)(pobuf+4) = l1; 
-#endif
 		pobuf += 5;
 	}
+
 	if ( retlen )
 		return(retlen);
+
 	return( pobuf - to );
 }
 
@@ -257,9 +237,11 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-#define OPT(x) (1<<opt_##x)
-	enum options_chars { opt_s,opt_q,opt_I };
-	uint32_t opts = OPT(s);
+#define OPTIONS s,q,I
+#define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
+#define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
+#define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
+	uint32_t opts;
 
 	uint8_t in[64],k[64];
 	uchar *p_in = in;
@@ -268,26 +250,25 @@ int main(int argc, char **argv, char **envp){
 	bzero(in,64);
 	uint len,klen=0,r,r2,b32len=0;
 	int ret = 0, res, timeoutsec;
-	int timeout = 5*60; // default 5 minutes timeout
-
 	struct termios oldSettings, newSettings;
 	char c,c2;
-
+	int infd = 0;
 	time_t now;
 	struct timeval tv;
 	int64_t diffsecs = 0; //x64
-	int infd = 0;
 	// would also be possible: uint32 - caculate with overflow.
-	// -30 = UINTMAX-30
-
+	// -30 = (UINTMAX-30) - UINTMAX
 	
+	int timeout = 5*60; // default 5 minutes timeout
+	SETOPT(s);
+
 
 	*argv++;
 	while ( *argv && ( argv[0][0] == '-' )){
 			for ( char *opt = *argv +1; *opt; *opt++ ){
 				switch (*opt) {
 					case 'I': 
-						opts|=OPT(I);
+						SETOPT(I);
 						break;
 					case 'p':
 						*argv++;
@@ -296,12 +277,13 @@ int main(int argc, char **argv, char **envp){
 							error(1,errno,"Couldn't open %s\n",*argv);
 						break;
 					case 's':
-						opts |= OPT(s);
+						SETOPT(s);
 						*argv++;
 						timeout = stol(*argv);
 						break;
 					case 'q':
-						opts |= OPT(q);
+						SETOPT(q);
+						DELOPT(s);
 						*argv++;
 						timeout = stol(*argv);
 						break;
@@ -359,10 +341,10 @@ int main(int argc, char **argv, char **envp){
 		p_in = in;
 		while(1){
 
-			if ( !(opts&OPT(I) ) )
+			if ( !OPT(I) )
 				write(1,"base32: ",8);
 			b32len = read(infd,in,64) - 1;
-			if ( infd == 0 && ! (opts&OPT(I)) ){
+			if ( infd == 0 && !OPT(I) ){
 				up();right(8);
 				cllcright();
 				P("XXX\n");
@@ -398,7 +380,7 @@ RESTART:
 	bzero( p_in, b32len );
 	b32len = 0;
 	
-	if ( !(opts&OPT(I) ) )
+	if ( !OPT(I) )
 		tcsetattr( fileno( stdin ), TCSANOW, &newSettings );
 
 SETTIMER:
@@ -411,7 +393,7 @@ SETTIMER:
 
 LOOP:
 
-	if ( opts&OPT(I) )
+	if ( OPT(I) )
 		P( AC_GREY "Ctrl+C to quit\n" );
 	else
 		P( AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,copy, n=copy "
@@ -462,7 +444,7 @@ LOOP:
 			res=0;
 			tv.tv_sec = 1; tv.tv_usec = 0;
 
-			if ( opts&OPT(I) )
+			if ( OPT(I) )
 				sleep(1);
 			else
 				res = select(1,&set, NULL,NULL, &tv );
@@ -474,9 +456,9 @@ LOOP:
 				if ( timeout ){
 					timeoutsec -- ;
 					if ( timeoutsec < 0 ){
-						if ( opts & OPT(s) )
+						if ( OPT(s) )
 							buf[0] = 's';
-						else if ( opts & OPT(q) )
+						else if ( OPT(q) )
 							buf[0] = 'q';
 					}
 				}

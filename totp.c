@@ -155,7 +155,7 @@ void usage(){
 		" -p pipename   : read the secret from a named pipe, or a subshell\n"
 		" -t time       : time in seconds since 1970\n"
 		" -T hh:mm[:ss] : time\n"
-		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/dayys to the current time,\n"
+		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/days to the current time,\n"
 		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 //		" -n ip         : use ntpc time, from ip\n"

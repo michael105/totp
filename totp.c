@@ -336,7 +336,19 @@ int main(int argc, char **argv, char **envp){
 	sigemptyset(&sa.sa_mask);
 	for ( int *s = sig; *s; s++ )
 		sigaddset( &sa.sa_mask, *s );
-	sigaction( SIGSEGV, &sa, 0 );*/ // doesn't work. so. finally doesn't matter.
+	sigaction( SIGSEGV, &sa, 0 );*/ // doesn't work. so. finally doesn't matter. 
+	// signal works.
+	// maybe I shouldn't publish those measurements. On the other hand. 
+	// I do believe in the right on privacy. And I like to use secure software,
+	// also written by others. So fuck those idiots, which obviously do believe,
+	// security measurements are evil. No. they aren't. And another guess,
+	// I'd recommend using either musl, uclibc, or (obviously) my minilib.
+	// the sources of glibc aren't to understand, I tried, and gave up.
+	// Further, there are combinations of compilers and libraries,
+	// leading to bad 'bugs'. ehm I do mean 'features'. 
+	// Did see some things, I don't trust anything anymore, I'm not able
+	// to read and understand in its whole. In consequence I should resettle 
+	// to netbsd as well. They seem to have several few problems in canada.
 
 
 	*argv++;

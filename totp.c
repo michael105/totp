@@ -65,8 +65,8 @@ static inline void __attribute__((always_inline))erasestack(ulong size){
 			: "+c"(size) :: "rax", "rdi", "memory", "cc");
 }
 
-// erase variables, secrets and the return address(es), starting with the current stackframe
-static inline void __attribute__((always_inline))quit_erasestack(ulong size, int exitcode){
+// erase variables, secrets and return address(es), starting with the current stackframe
+static inline void __attribute__((always_inline))exit_erase(ulong size, int exitcode){
 	asm volatile(
 			"xor %%rax,%%rax\n"
 			"mov %%rsp,%%rdi\n"
@@ -181,7 +181,6 @@ void usage(){
 		"github.com/michael105/totp\n"
 	);
 
-
 	exit(1);
 }
 
@@ -195,12 +194,13 @@ void xclip(uint token){
 	pipe(fd);
 	pid_t pid = fork();
 	if ( pid==0 ){
+		erasestack(2000); // shoot with cannons. why not. 
 		close(0);
 		close(fd[1]);
 		dup(fd[0]);
 		execlp("xclip","xclip",NULL);
 		write(2,"Error (xclip not found)\n\n",25);
-		exit(1);
+		exit_erase(2000,1);
 	}
 	close(fd[0]);
 	dprintf(fd[1],"%06d",token);
@@ -284,7 +284,7 @@ int main(int argc, char **argv, char **envp){
 			home();
 		}
 		erasestack(4000);
-		quit_erasestack(2000,ret);
+		exit_erase(2000,ret);
 	}
 	// macro, optional exitcode
 	# define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )

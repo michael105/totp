@@ -8,7 +8,8 @@ SHRINKELF
 
 COMPILE printf itodec memcpy bzero memset write sleep \
 			  select tcgetattr tcsetattr signal execlp fmtp sprintf fmtl atol \
-			  localtime_r mktime
+			  localtime_r mktime 
+COMPILE fmtp open error
 
 if [ "$compile_sntp" = "1" ]; then
 	source sntpc.c
@@ -54,8 +55,8 @@ typedef unsigned long ulong;
 #include "sha1/sha1.c"
 #include "vt100.c"
 
-// erase variables and secrets at the stack
-void __attribute__((noinline))erasestack(ulong size){
+// erase variables and secrets at the stack, "below" the current frame
+static inline void __attribute__((always_inline))erasestack(ulong size){
 	asm volatile(
 			"xor %%rax,%%rax\n"
 			"mov %%rsp,%%rdi\n"
@@ -63,6 +64,16 @@ void __attribute__((noinline))erasestack(ulong size){
 			"rep stosb\n" 
 			: "+c"(size) :: "rax", "rdi", "memory", "cc");
 }
+
+// erase variables and secrets at the stack, including the current stackframe
+static inline void __attribute__((always_inline))erasecurrentstack(ulong size){
+	asm volatile(
+			"xor %%rax,%%rax\n"
+			"mov %%rsp,%%rdi\n"
+			"rep stosb\n" 
+			: "+c"(size) :: "rax", "rdi", "memory", "cc");
+}
+
 
 int validate_base32(uchar *buf, uint len){
 	
@@ -235,15 +246,6 @@ unsigned int tonum(const char *c){
 	return(ret);
 }
 
-// clear screen and quit 
-void quit(int ret){
-	cls();
-	home();
-	exit(ret);
-}
-
-// macro, optional exitcode
-#define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )
 
 int main(int argc, char **argv, char **envp){
 
@@ -271,6 +273,22 @@ int main(int argc, char **argv, char **envp){
 	
 	int timeout = 5*60; // default 5 minutes timeout
 	SETOPT(s);
+
+	// clear screen and quit 
+	void quit(int ret){
+		bzero(k, sizeof(k) );
+		klen=0;
+		cls(); 
+		// should also clean the scrolling history.
+		// thinking about that, this would need it's own, virtual scrollback.
+		// or no scrolling at all. Maybe later.
+		home();
+		erasestack(4000);
+		erasecurrentstack(2000);
+		exit(ret);
+	}
+	// macro, optional exitcode
+	# define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )
 
 
 	*argv++;
@@ -483,6 +501,7 @@ LOOP:
 					QUIT();
 				case 'r':
 					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
+					cls();home();
 					goto RESTART;
 				case 'l':
 					up();

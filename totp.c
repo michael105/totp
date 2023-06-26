@@ -260,10 +260,9 @@ int main(int argc, char **argv, char **envp){
 	uchar buf[64];
 	bzero(k,64);
 	bzero(in,64);
-	uint len,klen=0,r,r2,b32len=0;
-	int ret = 0, res, timeoutsec;
+	uint klen=0,r,r2,b32len=0;
+	int res, timeoutsec;
 	struct termios oldSettings, newSettings;
-	char c,c2;
 	int infd = 0;
 	time_t now;
 	struct timeval tv;

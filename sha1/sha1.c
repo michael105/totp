@@ -296,7 +296,7 @@ void SHA1(
 
 
 // hmac.
-static void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
+void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
                        SHA1CONST unsigned char *text, int text_len, 
 							  unsigned char *hmac) {
 #define KEY_IOPAD_SIZE 64
@@ -304,8 +304,6 @@ static void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
 #define KEY_IOPAD_SIZE128 128
     SHA1_CTX ctx;
     unsigned char k_ipad[KEY_IOPAD_SIZE];    /* inner padding - key XORd with ipad  */
-    //unsigned char k_opad[KEY_IOPAD_SIZE];    /* outer padding - key XORd with opad */
-    int i;
 
 #ifdef SHA1DBG
 	 printf("\n   === hmac\n%d  = %d\n", key_len, text_len);
@@ -318,10 +316,8 @@ static void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
 #endif
 
 	 memset(k_ipad,0x36,64);
-	 //memset(k_opad,0x5c,64);
 	 for ( int a = 0; a<key_len; a++ ){
 		 k_ipad[a] ^= key[a];// ^ 0x36;
-		 //k_opad[a] ^= key[a];// ^ 0x36;
 	 }
     // perform inner SHA
     SHA1Init(&ctx);
@@ -339,6 +335,5 @@ static void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
     SHA1Update(&ctx, hmac, SHA1_DIGEST_SIZE); 
     SHA1Final(hmac, &ctx);        
 
-	 //asm volatile("rep stosq" : "=X"(hmac): "D"(&ctx), "ecx"(512), "eax"(0) :"cc","memory" );
 }
 

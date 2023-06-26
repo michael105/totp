@@ -331,6 +331,12 @@ int main(int argc, char **argv, char **envp){
 			SIGPOLL, SIGIO, SIGSTOP, SIGTSTP, 0 };
 	for ( int *s = sig; *s; s++ )
 		signal( *s, sighandle );
+/*	struct sigaction sa; 
+	sa.sa_handler = sighandle;
+	sigemptyset(&sa.sa_mask);
+	for ( int *s = sig; *s; s++ )
+		sigaddset( &sa.sa_mask, *s );
+	sigaction( SIGSEGV, &sa, 0 );*/ // doesn't work. so. finally doesn't matter.
 
 
 	*argv++;

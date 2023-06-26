@@ -338,10 +338,10 @@ int main(int argc, char **argv, char **envp){
 		sigaddset( &sa.sa_mask, *s );
 	sigaction( SIGSEGV, &sa, 0 );*/ // doesn't work. so. finally doesn't matter. 
 	// signal works.
-	// maybe I shouldn't publish those measurements. On the other hand. 
+	// maybe I shouldn't publish those tricks. On the other hand. 
 	// I do believe in the right on privacy. And I like to use secure software,
 	// also written by others. So fuck those idiots, which obviously do believe,
-	// security measurements are evil. No. they aren't. They prevent others from sneaking
+	// security is evil. No. it isn't. They prevent others from sneaking
 	// things, they simply shouldn't know. Either, cause those are business secrets,
 	// or, cause they won't understand. Fuck off. And another guess,
 	// I'd recommend using either musl, uclibc, or (obviously) my minilib.
@@ -351,6 +351,15 @@ int main(int argc, char **argv, char **envp){
 	// Did see some things, I don't trust anything anymore, I'm not able
 	// to read and understand in its whole. In consequence I should resettle 
 	// to netbsd as well. They seem to have several few problems in canada.
+	// All those ''bad guys'', they know both - howto do things 'secure',
+	// and howto get the information they want. Amongst others, by
+	// those intentional security 'holes'. Meant, backdoors.
+	// just to hint at the darknet. Very often control will lead to the opposite,
+	// and get itself evil. Maybe always, this might be a philosphical question.
+	// If everything would be controlled, what isn't possible, but let's imagine
+	// that case - there is no freedom. Without freedom, I do say, there's no humanity,
+	// morality isn't possible anymore.
+	// That is philosophical. But at least the conclusion is logically true.
 
 
 	*argv++;

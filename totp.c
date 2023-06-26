@@ -65,7 +65,7 @@ static inline void __attribute__((always_inline))erasestack(ulong size){
 			: "+c"(size) :: "rax", "rdi", "memory", "cc");
 }
 
-// erase variables and secrets at the stack, starting with the current stackframe
+// erase variables, secrets and the return address(es), starting with the current stackframe
 static inline void __attribute__((always_inline))erasecurrentstack(ulong size){
 	asm volatile(
 			"xor %%rax,%%rax\n"
@@ -93,7 +93,6 @@ int validate_base32(uchar *buf, uint len){
 	return(1);
 }
 
-#define x64
 
 int base32d( uchar* to, uchar* from, uint len ){
 	uchar* pbuf = from;
@@ -149,7 +148,6 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 	uint bc = *(uint32_t*)(result+offset);
 
-	// little endian
 	BSWAP(bc);
  	bc &= 0x7fffffff;
 

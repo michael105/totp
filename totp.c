@@ -65,7 +65,7 @@ static inline void __attribute__((always_inline))erasestack(ulong size){
 			: "+c"(size) :: "rax", "rdi", "memory", "cc");
 }
 
-// erase variables and secrets at the stack, including the current stackframe
+// erase variables and secrets at the stack, starting with the current stackframe
 static inline void __attribute__((always_inline))erasecurrentstack(ulong size){
 	asm volatile(
 			"xor %%rax,%%rax\n"
@@ -278,11 +278,13 @@ int main(int argc, char **argv, char **envp){
 	void quit(int ret){
 		bzero(k, sizeof(k) );
 		klen=0;
-		cls(); 
-		// should also clean the scrolling history.
-		// thinking about that, this would need it's own, virtual scrollback.
-		// or no scrolling at all. Maybe later.
-		home();
+		if ( ret == 0 ){
+			cls(); 
+			// should also clean the scrolling history.
+			// thinking about that, this would need it's own, virtual scrollback.
+			// or no scrolling at all. Maybe later.
+			home();
+		}
 		erasestack(4000);
 		erasecurrentstack(2000);
 		exit(ret);
@@ -325,7 +327,7 @@ int main(int argc, char **argv, char **envp){
 						b32len = strlen((char*)p_in);
 						if ( !validate_base32(p_in,b32len) ){
 							W("Invalid base32 secret\n");
-							exit(1);
+							QUIT(1);
 						}
 						break;
 					case 'd': // diff, in seconds

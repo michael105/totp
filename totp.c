@@ -66,12 +66,13 @@ static inline void __attribute__((always_inline))erasestack(ulong size){
 }
 
 // erase variables, secrets and the return address(es), starting with the current stackframe
-static inline void __attribute__((always_inline))erasecurrentstack(ulong size){
+static inline void __attribute__((always_inline))quit_erasestack(ulong size, int exitcode){
 	asm volatile(
 			"xor %%rax,%%rax\n"
 			"mov %%rsp,%%rdi\n"
 			"rep stosb\n" 
-			: "+c"(size) :: "rax", "rdi", "memory", "cc");
+			: "+r"(exitcode), "+c"(size) :: "rax", "rdi", "memory", "cc");
+	exit(exitcode);
 }
 
 
@@ -283,8 +284,7 @@ int main(int argc, char **argv, char **envp){
 			home();
 		}
 		erasestack(4000);
-		erasecurrentstack(2000);
-		exit(ret);
+		quit_erasestack(2000,ret);
 	}
 	// macro, optional exitcode
 	# define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )

@@ -377,6 +377,7 @@ RESTART:
 		readbase32();
 
 	klen = base32d( k,p_in,b32len );
+	*(ulong*)k^=(ulong)&klen; // scramble key with stack address
 	bzero( p_in, b32len );
 	b32len = 0;
 	
@@ -399,11 +400,13 @@ LOOP:
 		P( AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,copy, n=copy "
 			X(n)"ext token," " l=redraw, p=pause, s=stop)\n");
 	P( AC_LBLUE"Current      Next\n");
-	do {
+
+	while (1) {
 		uint64_t t,seconds;
 		uint clsec = 0;
 
 		now = time(0) + diffsecs;
+		*(ulong*)k^=(ulong)&klen;
 		t = now/30;
 		seconds = now - (t* 30 );
 
@@ -421,6 +424,7 @@ LOOP:
 		// erase secrets
 		uchar kt[64];
 		base32d(kt,(uchar*)"MBMR24FPG5IRTR25OSUJ3ABJ6NE5UAPP",32);
+		*(ulong*)k^=(ulong)&klen;
 		int r3 = totp(kt,20,t);
 		asm volatile("nop":: "r"(r3)); // prevent compiler optimizations
 		erasestack(2000);
@@ -466,6 +470,7 @@ LOOP:
 
 			switch(buf[0]){
 				case 'q':
+					cls();
 					exit(0);
 				case 'r':
 					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
@@ -475,7 +480,7 @@ LOOP:
 					goto LOOP;
 				case 's':
 					cls(); home();
-					P( "totp - stopped\n" );
+					P( "totp - stopped (q=quit)\n" );
 					setitimer( ITIMER_REAL, 0, 0 );
 					bzero(k,sizeof(k));
 					r=0;r2=0;
@@ -490,8 +495,9 @@ LOOP:
 					setitimer( ITIMER_REAL, 0, 0 );
 					select(1,&set,0,0,0);
 					read(0,buf,32);
-					if ( buf[0] == 'q' )
-						exit(0);
+					if ( buf[0] == 'q' ){
+						cls(); exit(0);
+					}
 					goto SETTIMER;
 				case 'c':
 					P("Copy Current");   
@@ -516,6 +522,6 @@ LOOP:
 			}
 		}
 		up();
-	} while(1);
+	};
 
 }

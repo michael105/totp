@@ -197,7 +197,7 @@ void xclip(uint token){
 		close(0);
 		close(fd[1]);
 		dup(fd[0]);
-		execlp("xclip",0);
+		execlp("xclip","xclip",NULL);
 		write(2,"Error (xclip not found)\n\n",25);
 		exit(1);
 	}
@@ -272,7 +272,7 @@ int main(int argc, char **argv, char **envp){
 	SETOPT(s);
 
 	// clear screen and quit 
-	void quit(int ret){
+ void quit(int ret){
 		bzero(k, sizeof(k) );
 		klen=0;
 		if ( ret == 0 ){
@@ -288,6 +288,25 @@ int main(int argc, char **argv, char **envp){
 	}
 	// macro, optional exitcode
 	# define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )
+
+ void readbase32(){
+		p_in = in;
+		while(1){
+
+			if ( !OPT(I) )
+				write(1,"base32: ",8);
+			b32len = read(infd,in,64) - 1;
+			if ( infd == 0 && !OPT(I) ){
+				up();right(8);
+				cllcright();
+				P("XXX\n");
+			}
+
+			if ( validate_base32(in,b32len) )
+				return;
+			W("Invalid base32 secret\n");
+		};
+	}
 
 
 	*argv++;
@@ -340,7 +359,6 @@ int main(int argc, char **argv, char **envp){
 					case 'T':
 						*argv++;
 						char *p = *argv;
-						int cl = 0;
 						struct tm tmnow;
 						now = time(0);
 						localtime_r(&now,&tmnow);
@@ -364,24 +382,6 @@ int main(int argc, char **argv, char **envp){
 			*argv++;
 	}
 
-	void readbase32(){
-		p_in = in;
-		while(1){
-
-			if ( !OPT(I) )
-				write(1,"base32: ",8);
-			b32len = read(infd,in,64) - 1;
-			if ( infd == 0 && !OPT(I) ){
-				up();right(8);
-				cllcright();
-				P("XXX\n");
-			}
-
-			if ( validate_base32(in,b32len) )
-				return;
-			W("Invalid base32 secret\n");
-		};
-	}
 
 	// init
    fd_set set;
@@ -464,7 +464,7 @@ LOOP:
 									  // will take at least until the next 30 seconds period begins
 									  // (at least).
 
-			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-seconds);
+			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-(int)seconds);
 			if ( timeout && timeoutsec<60 )
 				printf( "         " AC_GREY " (%d)    \n"AC_NORM, timeoutsec );
 			else {

@@ -305,16 +305,6 @@ void hmac_sha1( SHA1CONST unsigned char *key, int key_len,
     SHA1_CTX ctx;
     unsigned char k_ipad[KEY_IOPAD_SIZE];    /* inner padding - key XORd with ipad  */
 
-#ifdef SHA1DBG
-	 printf("\n   === hmac\n%d  = %d\n", key_len, text_len);
-	 for ( i=0; i<key_len; i++ )
-		 printf("%x",key[i]);
-	 printf("\n");
-	 for ( i=0; i<text_len; i++ )
-		 printf("%x",text[i]);
-	 printf("\n");
-#endif
-
 	 memset(k_ipad,0x36,64);
 	 for ( int a = 0; a<key_len; a++ ){
 		 k_ipad[a] ^= key[a];// ^ 0x36;

@@ -310,12 +310,25 @@ int main(int argc, char **argv, char **envp){
 
  	void sighandle(int n){
 		CLS();
-		QUIT(n);
+		write(1,"\nquit\n",6);
+		# define STSZ "8000"    // stacksize, to delete
+		asm volatile(
+			"mov %2,%0\n"
+			"xor %%rax,%%rax\n"
+			"mov $"STSZ",%%rcx\n"
+			"add $1024,%%rcx\n" // delete above of main
+			"mov %1,%%rdi\n"
+			"sub $"STSZ",%%rdi\n"
+			"rep stosb\n" 
+			:"=b"(n) : "r"(&argc), "m"(n): "rax", "rdi", "memory", "cc");
+		// getting segfaults, when assigning "+r"(n), "b"(n), .. (?)
+		exit(n);
 	}
 	
-	// cache signals, and prevent (readable) coredumps
+	// cache signals, try to prevent (readable) coredumps
 	int sig[] = { SIGSEGV, SIGQUIT, SIGHUP, SIGINT, SIGTERM, SIGSYS, SIGBUS, 
-			SIGFPE, SIGTRAP, SIGXCPU, SIGXFSZ, SIGIOT, SIGUNUSED, 0 };
+			SIGFPE, SIGTRAP, SIGXCPU, SIGXFSZ, SIGIOT, SIGUNUSED, SIGUSR1, SIGUSR2, 
+			SIGPOLL, SIGIO, SIGSTOP, SIGTSTP, 0 };
 	for ( int *s = sig; *s; s++ )
 		signal( *s, sighandle );
 

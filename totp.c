@@ -308,6 +308,17 @@ int main(int argc, char **argv, char **envp){
 		};
 	}
 
+ 	void sighandle(int n){
+		CLS();
+		QUIT(n);
+	}
+	
+	// cache signals, and prevent (readable) coredumps
+	int sig[] = { SIGSEGV, SIGQUIT, SIGHUP, SIGINT, SIGTERM, SIGSYS, SIGBUS, 
+			SIGFPE, SIGTRAP, SIGXCPU, SIGXFSZ, SIGIOT, SIGUNUSED, 0 };
+	for ( int *s = sig; *s; s++ )
+		signal( *s, sighandle );
+
 
 	*argv++;
 	while ( *argv && ( argv[0][0] == '-' )){

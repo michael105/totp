@@ -44,6 +44,7 @@ void cgoto(int col, int row){
 #define CRIGHT(num) __CWRITE( #num "C" ); 
 #define CLEFT(num) __CWRITE( #num "D" ); 
 #define CHOME() __CWRITE( "H" ); 
+#define CLS() __CWRITE( "2J" ); 
 
 
 

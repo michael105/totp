@@ -341,7 +341,9 @@ int main(int argc, char **argv, char **envp){
 	// maybe I shouldn't publish those measurements. On the other hand. 
 	// I do believe in the right on privacy. And I like to use secure software,
 	// also written by others. So fuck those idiots, which obviously do believe,
-	// security measurements are evil. No. they aren't. And another guess,
+	// security measurements are evil. No. they aren't. They prevent others from sneaking
+	// things, they simply shouldn't know. Either, cause those are business secrets,
+	// or, cause they won't understand. And another guess,
 	// I'd recommend using either musl, uclibc, or (obviously) my minilib.
 	// the sources of glibc aren't to understand, I tried, and gave up.
 	// Further, there are combinations of compilers and libraries,

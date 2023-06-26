@@ -235,6 +235,16 @@ unsigned int tonum(const char *c){
 	return(ret);
 }
 
+// clear screen and quit 
+void quit(int ret){
+	cls();
+	home();
+	exit(ret);
+}
+
+// macro, optional exitcode
+#define QUIT(...) quit(__VA_OPT__(__VA_ARGS__) + 0 )
+
 int main(int argc, char **argv, char **envp){
 
 #define OPTIONS s,q,I
@@ -470,8 +480,7 @@ LOOP:
 
 			switch(buf[0]){
 				case 'q':
-					cls();
-					exit(0);
+					QUIT();
 				case 'r':
 					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
 					goto RESTART;
@@ -487,7 +496,7 @@ LOOP:
 					select(1,&set,0,0,0);
 					read(0,buf,32);
 					if ( buf[0] == 'q' )
-						exit(0);
+						QUIT();
 					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
 					goto RESTART;
 				case 'p':
@@ -495,9 +504,8 @@ LOOP:
 					setitimer( ITIMER_REAL, 0, 0 );
 					select(1,&set,0,0,0);
 					read(0,buf,32);
-					if ( buf[0] == 'q' ){
-						cls(); exit(0);
-					}
+					if ( buf[0] == 'q' )
+						QUIT();
 					goto SETTIMER;
 				case 'c':
 					P("Copy Current");   

@@ -325,42 +325,6 @@ int main(int argc, char **argv, char **envp){
 		exit(n);
 	}
 	
-	// cache signals, try to prevent (readable) coredumps
-	int sig[] = { SIGSEGV, SIGQUIT, SIGHUP, SIGINT, SIGTERM, SIGSYS, SIGBUS, 
-			SIGFPE, SIGTRAP, SIGXCPU, SIGXFSZ, SIGIOT, SIGUNUSED, SIGUSR1, SIGUSR2, 
-			SIGPOLL, SIGIO, SIGSTOP, SIGTSTP, 0 };
-	for ( int *s = sig; *s; s++ )
-		signal( *s, sighandle );
-/*	struct sigaction sa; 
-	sa.sa_handler = sighandle;
-	sigemptyset(&sa.sa_mask);
-	for ( int *s = sig; *s; s++ )
-		sigaddset( &sa.sa_mask, *s );
-	sigaction( SIGSEGV, &sa, 0 );*/ // doesn't work. so. finally doesn't matter. 
-	// signal works.
-	// maybe I shouldn't publish those tricks. On the other hand. 
-	// I do believe in the right on privacy. And I like to use secure software,
-	// also written by others. So fuck those idiots, which obviously do believe,
-	// security is evil. No. it isn't. They prevent others from sneaking
-	// things, they simply shouldn't know. Either, cause those are business secrets,
-	// or, cause they won't understand. Fuck off. And another guess,
-	// I'd recommend using either musl, uclibc, or (obviously) my minilib.
-	// the sources of glibc aren't to understand, I tried, and gave up.
-	// Further, there are combinations of compilers and libraries,
-	// leading to bad 'bugs'. ehm I do mean 'features'. 
-	// Did see some things, I don't trust anything anymore, I'm not able
-	// to read and understand in its whole. In consequence I should resettle 
-	// to netbsd as well. They seem to have several few problems in canada.
-	// All those ''bad guys'', they know both - howto do things 'secure',
-	// and howto get the information they want. Amongst others, by
-	// those intentional security 'holes'. Meant, backdoors.
-	// just to hint at the darknet. Very often control will lead to the opposite,
-	// and get itself evil. Maybe always, this might be a philosphical question.
-	// If everything would be controlled, what isn't possible, but let's imagine
-	// that case - there is no freedom. Without freedom, I do say, there's no humanity,
-	// morality isn't possible anymore.
-	// That is philosophical. But at least the conclusion is logically true.
-
 
 	*argv++;
 	while ( *argv && ( argv[0][0] == '-' )){

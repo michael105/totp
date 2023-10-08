@@ -76,7 +76,7 @@ static inline void __attribute__((always_inline))exit_erase(ulong size, int exit
 	exit(exitcode);
 }
 
-
+// validate, convert lower to upper
 int validate_base32(uchar *buf, uint len){
 	
 	if ( len&0xf )
@@ -86,10 +86,12 @@ int validate_base32(uchar *buf, uint len){
 		if ( buf[a] == '=' && a<len-1 )
 			return 0;
 		else
-		if ( buf[a] <'2' || 
-				(buf[a] >'8' && buf[a] <'A' ) || 
-				buf[a] > 'Z' )
-			return(0);
+			if ( buf[a]>='a' && buf[a]<='z' ) buf[a] -= 32; 
+			else
+				if ( buf[a] <'2' || 
+						(buf[a] >'8' && buf[a] <'A' ) || 
+						buf[a] > 'Z' )
+					return(0);
 	}
 
 	return(1);

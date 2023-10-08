@@ -324,7 +324,7 @@ int main(int argc, char **argv, char **envp){
 		exit(n);
 	}
 	
-	while ( *++argv && ( argv[0][0] == '-' )){
+	while ( *++argv && ( **argv == '-' ) ){
 		for ( char *opt = *argv +1; *opt; *opt++ ){
 			switch (*opt) {
 				case 'I': 
@@ -370,6 +370,10 @@ int main(int argc, char **argv, char **envp){
 					now = time(0);
 					diffsecs -= now;
 					break;
+			/*	case 'n':
+					*argv++;
+					now = time(0);
+					break;*/
 				case 'T':
 					*argv++;
 					char *p = *argv;

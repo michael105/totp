@@ -7,9 +7,9 @@ SHRINKELF
 #STRIPFLAG
 
 COMPILE printf itodec memcpy bzero memset write sleep \
-			  select tcgetattr tcsetattr signal execlp fmtp sprintf fmtl atol \
+			  select tcgetattr tcsetattr signal _execlp fmtp sprintf fmtl atol \
 			  localtime_r mktime 
-COMPILE fmtp open error
+COMPILE fmtp open error MLVALIST
 
 if [ "$compile_sntp" = "1" ]; then
 	source sntpc.c
@@ -36,11 +36,11 @@ return
 #include <error.h>
 #include <fcntl.h>
 
-#define AC_LBLUE "\e[34m"
-#define AC_YELLOW "\e[33m"
+#define AC_LBLUE "\e[1;34m"
+#define AC_YELLOW "\e[1;33m"
 #define AC_NORM "\e[1;37;40m"
 #define AC_BLACK "\e[0;30;40m"
-#define AC_BLUE "\e[34m"
+#define AC_BLUE "\e[0;34m"
 #define AC_GREY "\e[1;30m"
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -66,6 +66,7 @@ static inline void __attribute__((always_inline))erasestack(ulong size){
 }
 
 // erase variables, secrets and return address(es), starting with the current stackframe
+// it is only possible to exit to the system afterwards
 static inline void __attribute__((always_inline))exit_erase(ulong size, int exitcode){
 	asm volatile(
 			"xor %%rax,%%rax\n"
@@ -142,15 +143,11 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 	uint offset = result[19] & 0x0f;
 
-/*	bc = (result[offset] & 0x7f) << 24 |
-		(result[offset + 1] & 0xff) << 16 |
-		(result[offset + 2] & 0xff) << 8 |
-		(result[offset + 3] & 0xff);*/
-
 	uint bc = *(uint32_t*)(result+offset);
 
+	bc = (bc>>1)<<1;
 	BSWAP(bc);
- 	bc &= 0x7fffffff;
+ 	//bc &= 0x7fffffff;
 
 	return( bc % 1000000 );
 }
@@ -325,78 +322,75 @@ int main(int argc, char **argv, char **envp){
 		exit(n);
 	}
 	
-
-	*argv++;
-	while ( *argv && ( argv[0][0] == '-' )){
-			for ( char *opt = *argv +1; *opt; *opt++ ){
-				switch (*opt) {
-					case 'I': 
-						SETOPT(I);
-						break;
-					case 'p':
-						*argv++;
-						infd = open( *argv, O_RDONLY );
-						if ( infd<=0 )
-							error(1,errno,"Couldn't open %s\n",*argv);
-						break;
-					case 's':
-						SETOPT(s);
-						*argv++;
-						timeout = stol(*argv);
-						break;
-					case 'q':
-						SETOPT(q);
-						DELOPT(s);
-						*argv++;
-						timeout = stol(*argv);
-						break;
-					case 'c':
-						memcpy(in,(uchar*)"JBSWY3DPEHPK3PXP",16);
-						b32len = 16;
-						break;
-					case 'b':
-						*argv++;
-						p_in = (uchar*)*argv;
-						b32len = strlen((char*)p_in);
-						if ( !validate_base32(p_in,b32len) ){
-							W("Invalid base32 secret\n");
-							QUIT(1);
-						}
-						break;
-					case 'd': // diff, in seconds
-						*argv++;
-						diffsecs += stol(*argv);
-						break;
-					case 't':
-						*argv++;
-						diffsecs += stol(*argv);
-						now = time(0);
-						diffsecs -= now;
-						break;
-					case 'T':
-						*argv++;
-						char *p = *argv;
-						struct tm tmnow;
-						now = time(0);
-						localtime_r(&now,&tmnow);
-						if (!*p)
-							usage();
-						if ( p[2] == ':' ){
-							tmnow.tm_hour = tonum(p);
-							tmnow.tm_min = tonum(p+3);
-							if ( p[5] == ':' )
-								tmnow.tm_sec = tonum(p+6);
-							time_t t = mktime( &tmnow );
-							diffsecs += t-now;
-						} else usage();
-						break;
-
-					default:
-					case ('h'):
+	while ( *++argv && ( argv[0][0] == '-' )){
+		for ( char *opt = *argv +1; *opt; *opt++ ){
+			switch (*opt) {
+				case 'I': 
+					SETOPT(I);
+					break;
+				case 'p':
+					*argv++;
+					infd = open( *argv, O_RDONLY );
+					if ( infd<=0 )
+						error(1,errno,"Couldn't open %s\n",*argv);
+					break;
+				case 's':
+					SETOPT(s);
+					*argv++;
+					timeout = stol(*argv);
+					break;
+				case 'q':
+					SETOPT(q);
+					DELOPT(s);
+					*argv++;
+					timeout = stol(*argv);
+					break;
+				case 'c':
+					memcpy(in,(uchar*)"JBSWY3DPEHPK3PXP",16);
+					b32len = 16;
+					break;
+				case 'b':
+					*argv++;
+					p_in = (uchar*)*argv;
+					b32len = strlen((char*)p_in);
+					if ( !validate_base32(p_in,b32len) ){
+						W("Invalid base32 secret\n");
+						QUIT(1);
+					}
+					break;
+				case 'd': // diff, in seconds
+					*argv++;
+					diffsecs += stol(*argv);
+					break;
+				case 't':
+					*argv++;
+					diffsecs += stol(*argv);
+					now = time(0);
+					diffsecs -= now;
+					break;
+				case 'T':
+					*argv++;
+					char *p = *argv;
+					struct tm tmnow;
+					now = time(0);
+					localtime_r(&now,&tmnow);
+					if (!*p)
 						usage();
-				}
+					if ( p[2] == ':' ){
+						tmnow.tm_hour = tonum(p);
+						tmnow.tm_min = tonum(p+3);
+						if ( p[5] == ':' )
+							tmnow.tm_sec = tonum(p+6);
+						time_t t = mktime( &tmnow );
+						diffsecs += t-now;
+					} else usage();
+					break;
+
+				default:
+				case ('h'):
+					usage();
 			}
-			*argv++;
+		}
 	}
 
 

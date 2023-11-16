@@ -145,16 +145,10 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 	uint offset = result[19] & 0x0f;
 
-/*    uint bc = (result[offset] & 0x7f) << 24 |
-		                 (result[offset + 1] & 0xff) << 16 |
-		                 (result[offset + 2] & 0xff) << 8 |
-		                 (result[offset + 3] & 0xff);
-							  */
 	uint bc = *(uint32_t*)(result+offset);// & ~0x80;
 
 	BSWAP(bc);
 	bc = (bc<<1)>>1;
- 	//bc &= 0x7fffffff;
 
 	return( bc % 1000000 );
 }

@@ -145,10 +145,15 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 	uint offset = result[19] & 0x0f;
 
-	uint bc = *(uint32_t*)(result+offset);
+/*    uint bc = (result[offset] & 0x7f) << 24 |
+		                 (result[offset + 1] & 0xff) << 16 |
+		                 (result[offset + 2] & 0xff) << 8 |
+		                 (result[offset + 3] & 0xff);
+							  */
+	uint bc = *(uint32_t*)(result+offset);// & ~0x80;
 
-	bc = (bc>>1)<<1;
 	BSWAP(bc);
+	bc = (bc<<1)>>1;
  	//bc &= 0x7fffffff;
 
 	return( bc % 1000000 );
@@ -156,7 +161,6 @@ uint totp( uint8_t *key, uint keylen, uint64_t step ){
 
 
 void usage(){
-	
 	W( "totp [-t time] [-T time] [-d diff] [-b secret] [-p pipe] [-h]   Calculate 2fa otp tokens.\n"
 		"\n"
 		"options\n"
@@ -179,7 +183,6 @@ void usage(){
 		"Michael (miSc) Myer, 2023, GPL\n"
 		"github.com/michael105/totp\n"
 	);
-
 	exit(1);
 }
 
@@ -434,15 +437,15 @@ SETTIMER:
 
 
 #define X(y) #y
-//#define X(y) AC_MARINE #y AC_NORM
+//#define X(y) AC_LGREY #y AC_GREY
 
 LOOP:
 
 	if ( OPT(I) )
 		P( AC_GREY "Ctrl+C to quit\n" );
 	else
-		P( AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,copy, n=copy "
-			X(n)"ext token," " l=redraw, p=pause, s=stop)\n");
+		P( AC_GREY" (q="X(q)"uit,r="X(r)"eread base32,c="X(c)"opy token,n=copy "
+			X(n)"ext token," " l=redraw, p="X(p)"ause, s="X(s)"top)\n");
 	P( AC_LBLUE"Current      Next\n");
 
 	while (1) {

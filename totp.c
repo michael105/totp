@@ -9,7 +9,7 @@ SHRINKELF
 COMPILE printf itodec memcpy bzero memset write sleep \
 			  select tcgetattr tcsetattr signal _execlp fmtp sprintf fmtl atol \
 			  localtime_r mktime 
-COMPILE fmtp open error MLVALIST
+COMPILE fmtp open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
 	source sntpc.c
@@ -365,12 +365,14 @@ int main(int argc, char **argv, char **envp){
 					break;
 				case 'b':
 					*argv++;
-					p_in = (uchar*)*argv;
+					//p_in = (uchar*)*argv;
+					b32len = strncpy( in, *argv, 64 );
 					b32len = strlen((char*)p_in);
 					if ( !validate_base32(p_in,b32len) ){
 						W("Invalid base32 secret\n");
 						QUIT(1);
 					}
+					memset(*argv,0,b32len); // erase arg
 					break;
 				case 'd': // diff, in seconds
 					*argv++;

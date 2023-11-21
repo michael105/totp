@@ -294,7 +294,7 @@ int main(int argc, char **argv, char **envp){
 			if ( !OPT(I) )
 				write(1,"base32: ",8);
 			b32len = read(infd,in,64) - 1;
-			if ( b32len <= 0 ){ // stdin closed, or another error
+			if ( b32len < 0 ){ // stdin closed, or another error
 				W("Read error\n");
 				exit(1);
 			}

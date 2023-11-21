@@ -244,7 +244,7 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-#define OPTIONS s,q,I
+#define OPTIONS s,q,I,r,p
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
@@ -255,10 +255,12 @@ int main(int argc, char **argv, char **envp){
 	uchar buf[64];
 	bzero(k,64);
 	bzero(in,64);
-	uint klen=0,r,r2,b32len=0;
+	uint klen=0,r,r2;
+	int b32len=0;
 	int res, timeoutsec;
 	struct termios oldSettings, newSettings;
-	int infd = 0;
+	int infd = 0; // read secret from
+	int kfd = 0; // keyboard
 	time_t now;
 	struct timeval tv;
 	int64_t diffsecs = 0; //x64
@@ -292,6 +294,14 @@ int main(int argc, char **argv, char **envp){
 			if ( !OPT(I) )
 				write(1,"base32: ",8);
 			b32len = read(infd,in,64) - 1;
+			if ( b32len <= 0 ){ // stdin closed, or another error
+				W("Read error\n");
+				exit(1);
+			}
+
+			if ( in[b32len] != '\n' )
+				b32len++;
+
 			if ( infd == 0 && !OPT(I) ){
 				up();right(8);
 				cllcright();
@@ -327,7 +337,12 @@ int main(int argc, char **argv, char **envp){
 				case 'I': 
 					SETOPT(I);
 					break;
+				case 'r':
+					SETOPT(r);
+					break;
+
 				case 'p':
+					SETOPT(p);
 					*argv++;
 					infd = open( *argv, O_RDONLY );
 					if ( infd<=0 )
@@ -401,6 +416,16 @@ int main(int argc, char **argv, char **envp){
    fd_set set;
 	FD_ZERO(&set);
 	FD_SET(0,&set);
+
+	if ( OPT(r) && !(OPT(p)) ){
+		readbase32();
+		close(0);
+		kfd = open("/dev/tty", O_RDONLY|O_NOCTTY);
+		if ( kfd <0 ){
+			printf("Error opening /dev/tty\n");
+			exit(1);
+		}
+	}
 
 	tcgetattr( fileno( stdin ), &oldSettings );
 	newSettings = oldSettings;

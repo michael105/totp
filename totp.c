@@ -170,18 +170,18 @@ void usage(){
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"
 		"                 and erase all secrets.\n"
-		"                 Default ist 5 minutes, -s 0 disables the timeout\n"
+		"                 Default is 5 minutes, -s 0 disables the timeout\n"
 		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
-		"Michael (miSc) Myer, 2023, GPL\n"
+		"Michael misc147, 2023, GPL\n"
 		"github.com/michael105/totp\n"
 	);
 	exit(1);
 }
 
-// dummy
+// dummy timeout handler
 void sigalarm(int sig){
 }
 
@@ -425,7 +425,7 @@ int main(int argc, char **argv, char **envp){
 		close(0);
 		kfd = open("/dev/tty", O_RDONLY|O_NOCTTY);
 		if ( kfd <0 ){
-			printf("Error opening /dev/tty\n");
+			W("Error opening /dev/tty\n");
 			exit(1);
 		}
 	}

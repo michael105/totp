@@ -159,6 +159,7 @@ void usage(){
 		"\n"
 		"options\n"
 		" -I            : No interactive mode, read the secret from stdin\n"
+		" -r            : read the secret from a pipe to stdin\n"
 		" -p pipename   : read the secret from a named pipe, or a subshell\n"
 		" -t time       : time in seconds since 1970\n"
 		" -T hh:mm[:ss] : time\n"
@@ -372,7 +373,7 @@ int main(int argc, char **argv, char **envp){
 						W("Invalid base32 secret\n");
 						QUIT(1);
 					}
-					memset(*argv,0,b32len); // erase arg
+					memset(*argv-3,0,b32len+3); // erase argv
 					break;
 				case 'd': // diff, in seconds
 					*argv++;

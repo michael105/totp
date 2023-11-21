@@ -367,7 +367,7 @@ int main(int argc, char **argv, char **envp){
 				case 'b':
 					*argv++;
 					//p_in = (uchar*)*argv;
-					b32len = strncpy( in, *argv, 64 );
+					strncpy( in, *argv, 64 );
 					b32len = strlen((char*)p_in);
 					if ( !validate_base32(p_in,b32len) ){
 						W("Invalid base32 secret\n");

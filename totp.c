@@ -1,19 +1,19 @@
-#if 0
+#ifdef mlconfig
 
 # compile the sntp client
-#compile_sntp=1
+compile_sntp=1
 
 SHRINKELF
 #STRIPFLAG
 
 COMPILE printf itodec memcpy bzero memset write sleep \
-			  select tcgetattr tcsetattr signal _execlp fmtp sprintf fmtl atol \
+			  select tcgetattr tcsetattr signal _execlp fmtp snprintf fmtl atol \
 			  localtime_r mktime 
 COMPILE fmtp open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
-	source sntpc.c
-	DEFINE TOTP_SNTPC
+	source sntp/sntp.c
+	DEFINE TOTP_SNTP
 fi
 
 return
@@ -50,10 +50,15 @@ typedef unsigned long ulong;
 
 #define W(s) write(2,s,sizeof(s))
 #define P(s) write(1,s,sizeof(s))
+#define V(s) write(1,s,sizeof(s))
+#define v(fmt,...) printf(fmt,__VA_ARGS__)
 #define SHA1HANDSOFF
 
 #include "sha1/sha1.c"
 #include "vt100.c"
+#ifdef TOTP_SNTP
+#include "sntp/sntp.c"
+#endif
 
 // erase variables and secrets at the stack, "below" the current frame
 static inline void __attribute__((always_inline))erasestack(ulong size){
@@ -166,7 +171,8 @@ void usage(){
 		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/days to the current time,\n"
 		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
-//		" -n ip         : use ntpc time, from ip\n"
+		" -n source     : use ntpc time, source one of a,c,f,g,m\n"
+		"                 (apple,cloudflare,facebook,google,microsoft)\n"
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"
 		"                 and erase all secrets.\n"
@@ -245,7 +251,7 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-#define OPTIONS s,q,I,r,p
+#define OPTIONS s,q,I,r,p,n
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
@@ -265,6 +271,7 @@ int main(int argc, char **argv, char **envp){
 	time_t now;
 	struct timeval tv;
 	int64_t diffsecs = 0; //x64
+	in_addr_t sntp_ip = 0;
 	// would also be possible: uint32 - caculate with overflow.
 	// -30 = (UINTMAX-30) - UINTMAX
 	
@@ -341,6 +348,18 @@ int main(int argc, char **argv, char **envp){
 				case 'r':
 					SETOPT(r);
 					break;
+# ifdef TOTP_SNTP
+//#error dsf
+				case 'n':
+					SETOPT(n);
+					*argv++;
+					int c = argv[0][0];
+					c = (c-97)>>1;
+					sntp_ip = SNTP_IP(c);
+					v("c: %d ip: %x\n",c,sntp_ip);
+					break;
+# endif
+
 
 				case 'p':
 					SETOPT(p);
@@ -416,6 +435,36 @@ int main(int argc, char **argv, char **envp){
 
 
 	// init
+# ifdef TOTP_SNTP
+	if ( sntp_ip ){
+		v("Get sntp timediff, ip: %x\n",sntp_ip);
+		struct timeval tvdiff,tv,tv_akt;
+		int ret = sntp_simple_gettimediff( &tvdiff, sntp_ip, 1000 );
+		if ( ret ){
+			W("Error\n");
+			exit(ret);
+		}
+		diffsecs = tvdiff.tv_sec;
+
+		gettimeofday(&tv,0);
+
+		tv_akt.tv_sec = tv.tv_sec+tvdiff.tv_sec;
+		tv_akt.tv_usec = tv.tv_usec+tvdiff.tv_usec;
+		printf("now sec: %u  usec: %u\n", tv_akt.tv_sec,tv_akt.tv_usec);
+
+		time_t tnow = tv_akt.tv_sec;
+
+		char buf[32];
+		struct tm tmnow;
+		localtime_r(&tnow,&tmnow);
+
+		prints( AC_CYAN "Time: (UTC) ", asctime_r( &tmnow, buf ), AC_N );
+	}
+# endif
+
+
+
+
    fd_set set;
 	FD_ZERO(&set);
 	FD_SET(0,&set);

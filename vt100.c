@@ -71,13 +71,13 @@ char* uitos(char *buf, uint i){
 
 void right(uint cols){
 	char buf[16];
-	int l = sprintf(buf,"\e[%uC",cols);
+	int l = snprintf(buf,16,"\e[%uC",cols);
 	write(1,buf,l);
 }
 
 void left(uint cols){
 	char buf[16];
-	int l = sprintf(buf,"\e[%uD",cols);
+	int l = snprintf(buf,16,"\e[%uD",cols);
 	write(1,buf,l);
 }
 

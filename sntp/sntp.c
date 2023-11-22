@@ -339,11 +339,6 @@ int sntp_req_handle( sntp_request *r ){
  returns: the number of requests, still in the array and unanswered;
    or -errno for errors
     (110 is timeout) 
-
-The basic idea is to be able to send several sntp packets in parallel,
-and save the answers for later processing.
-Having the least possible time deviation, and compare them
-between replies of several servers.
 */
 int sntp_req_wait( sntp_request reqs[], int reqnum, int waitnum, int sockfd, int timeout ){ 
 	DBG("req_wait 1\n");

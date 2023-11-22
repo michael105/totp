@@ -340,7 +340,7 @@ int sntp_req_handle( sntp_request *r ){
           -1: wait forever
  returns: the number of requests, still in the array and unanswered;
    or -errno for errors
-    (110 is timeout - rfc says "connection timed out" rotfl
+    (110 is timeout - convention and norm say "connection timed out" rotfl
 	  111 - Connection refused
 	  112 - Host down )
 */

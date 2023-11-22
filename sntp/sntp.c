@@ -517,32 +517,6 @@ int sntp_simple_gettime( struct timeval *tv, in_addr_t ip, int timeout ){
 
 
 
-
-
-typedef struct {
-	struct {
-		uchar sethw:1;
-		uchar async:1;
-	} flags;
-	unsigned int ip;
-	char* name;
-} sntp_named;
-
-#define _ASSIGN_NAMED(arg) named_args.arg
-
-// default ip is google. (atomic clock, smeared leap seconds)
-// I suggest this ip as fallback. According to the rfc the ip has to be updated
-// for each request. 
-// ( Yet google didn't change the ip, so this should be ok,
-// in the case of dns troubles. 
-// E.g. - dnscrypt failing due to a wrong system time,
-// and impossible to send regular dns requests due to security restrictions )
-#define sntp(...) ({ \
-		struct { int flags; uint ip; char *name; char __zero[0]; } named_args = { 0, 0x0023EFD8, 0 }; \
-		FOREACH( _ASSIGN_NAMED, ;, __zero[0]=0, __VA_ARGS__); \
-		1; \
-		})
-
 	
 
 

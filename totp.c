@@ -461,7 +461,7 @@ int main(int argc, char **argv, char **envp){
 		struct tm tmnow;
 		localtime_r(&tnow,&tmnow);
 
-		prints( AC_CYAN "Time: (UTC) ", asctime_r( &tmnow, buf ), AC_N );
+		v( AC_CYAN "Time: (UTC) %s%s\n", asctime_r( &tmnow, buf ), AC_N );
 	}
 # endif
 

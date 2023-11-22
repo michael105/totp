@@ -43,6 +43,7 @@ return
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -56,6 +57,8 @@ return
 #define eprintf(...) fprintf(stderr,__VA_ARGS__)
 #define USE_ERRNO
 #define BSWAP(x) asm("bswap %0" : "+r"(x):: "cc" )
+#define AC_CYAN "\033[1;36m"
+#define AC_N "\033[0,37m"
 
 #endif
 
@@ -366,8 +369,8 @@ int sntp_req_wait( sntp_request reqs[], int reqnum, int waitnum, int sockfd, int
 
 	DBG("req_wait 2\n");
 	if ( timeout >= 0 ){
-		int t = timeout - tv.tv_sec * 1000;
 		tv.tv_sec = timeout/1000;
+		int t = timeout - tv.tv_sec * 1000;
 		tv.tv_usec = t*1000;
 
 #ifndef LINUX // with linux, select updates the timeout timeval

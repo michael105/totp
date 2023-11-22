@@ -593,8 +593,6 @@ int main( int argc, char **argv ){
 	printf("sntp sec: %u  fraction: %u\n",diff.seconds, diff.fraction );
 
 
-	exit(0);
-
 	
 
 	exit(0);

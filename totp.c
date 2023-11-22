@@ -35,6 +35,7 @@ return
 #include <errno.h>
 #include <error.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 
 #define AC_LBLUE "\e[1;34m"
 #define AC_YELLOW "\e[1;33m"
@@ -52,9 +53,10 @@ typedef unsigned long ulong;
 #define P(s) write(1,s,sizeof(s))
 #define V(s) write(1,s,sizeof(s))
 #define v(fmt,...) printf(fmt,__VA_ARGS__)
-#define SHA1HANDSOFF
 
+#define SHA1HANDSOFF
 #include "sha1/sha1.c"
+
 #include "vt100.c"
 #ifdef TOTP_SNTP
 #include "sntp/sntp.c"
@@ -173,7 +175,7 @@ void usage(){
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 		" -n source     : use ntpc time, source one of a,c,f,g,m\n"
 		"                 (apple,cloudflare,facebook,google,microsoft)\n"
-		"                 careful, microsoft will crash - type hicrosoft or jicrosoft instead\n"
+		"                 careful, microsoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"
 		"                 and erase all secrets.\n"
@@ -387,7 +389,7 @@ int main(int argc, char **argv, char **envp){
 				case 'b':
 					*argv++;
 					//p_in = (uchar*)*argv;
-					strncpy( in, *argv, 64 );
+					strncpy( (char*)in, *argv, 64 );
 					b32len = strlen((char*)p_in);
 					if ( !validate_base32(p_in,b32len) ){
 						W("Invalid base32 secret\n");
@@ -590,10 +592,6 @@ LOOP:
 			switch(buf[0]){
 				case 'q':
 					QUIT();
-				case 'r':
-					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
-					cls();home();
-					goto RESTART;
 				case 'l':
 					up();
 					goto LOOP;
@@ -607,8 +605,13 @@ LOOP:
 					read(0,buf,32);
 					if ( buf[0] == 'q' )
 						QUIT();
+					//tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
+					//goto RESTART;
+				case 'r':
 					tcsetattr( fileno( stdin ), TCSANOW, &oldSettings );
+					cls();home();
 					goto RESTART;
+
 				case 'p':
 					P("(pause)");
 					setitimer( ITIMER_REAL, 0, 0 );
@@ -618,12 +621,14 @@ LOOP:
 						QUIT();
 					goto SETTIMER;
 				case 'c':
+				case ' ':
 					P("Copy Current");   
 					left(16);
 					xclip(r);
 					clsec = 3;
 					break;
 				case 'n':
+				case '\n':
 					P("Copy Next");  
 					left(16);
 					xclip(r2);

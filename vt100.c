@@ -32,7 +32,7 @@ void home(){
 
 void cgoto(int col, int row){
 	char buf[32];
-	int l = sprintf(buf,"\e[%d;%dH",col,row);
+	int l = snprintf(buf,32,"\e[%d;%dH",col,row);
 	write(1,buf,l);
 }
 

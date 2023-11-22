@@ -519,17 +519,6 @@ int sntp_simple_gettime( struct timeval *tv, in_addr_t ip, int timeout ){
 
 	
 
-
-
-int _sntp( sntp_named *args ){
-
-
-
-
-	return 0;
-}
-  
-
 #ifndef TOTP_SNTP
 int main( int argc, char **argv ){
 

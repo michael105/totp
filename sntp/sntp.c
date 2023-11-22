@@ -237,6 +237,7 @@ int sntp_req_send( in_addr_t ip, sntp_request *req, int *sockfd ){
 
 
 	bzero( req, sizeof( sntp_request ) );
+	req->status = SNTP_STATUS(empty);
 	int ret;
 	//sntp_packet packet;
 	//bzero( &packet, sizeof( sntp_packet ) );
@@ -264,6 +265,7 @@ int sntp_req_send( in_addr_t ip, sntp_request *req, int *sockfd ){
 	req->packet.stv.tx = req->sent = sntp_tv_lton( sntp_from_tv( tv ) );
 	//packet.stv.tx = sntp_tv_lton( req->sent ); // network byte order
 
+	req->status = SNTP_STATUS(ready); // initialized
 	// send 
 	if ( (ret = sendto( *sockfd, &req->packet, sizeof(sntp_packet), 0, (struct sockaddr*)&serv_addr, sizeof( serv_addr ) ))<0 )
 		RETERR("Cannot send",ret);
@@ -326,7 +328,7 @@ int sntp_req_handle( sntp_request *r ){
 		r->timediff_abs.time = r->timediff.time;
 
 
-	return(0);
+	return(SNTP_STATUS(ok));
 }
 
 /*
@@ -402,7 +404,7 @@ int sntp_req_wait( sntp_request reqs[], int reqnum, int waitnum, int sockfd, int
 			IF_ERRNO( ret, != EINTR)
 				RETERR("select", ret);
 		}
-		printf("ret: %d\n",ret);
+		DBG("ret: %d\n",ret);
 		if ( ret == 0 ){
 			RETERR("timeout",-ETIMEDOUT);
 		}
@@ -466,40 +468,51 @@ int _sntp_simple_get(sntp_request *req, in_addr_t ip, int timeout){
 	int sockfd = 0;
 	bzero(req,sizeof(sntp_request));
 
-	int r = sntp_req_send( ip, req, &sockfd );
+	int ret;
+	if ( (ret= sntp_req_send( ip, req, &sockfd)) != SNTP_STATUS(ok) )
+		return(ret);
 
-	r = sntp_req_wait( req, 1,1, sockfd, timeout );
+	if ( (ret = sntp_req_wait( req, 1,1, sockfd, timeout )) != SNTP_STATUS(ok) )
+		return(ret);
 
 	close(sockfd);
 
-	r = sntp_req_handle( req );
-	return(r);
+	ret = sntp_req_handle( req );
+	return(ret);
 }
 	
 
 // returns a timediff to the local time
 int sntp_simple_gettimediff( struct timeval *tv, in_addr_t ip, int timeout ){
 	sntp_request req;
-	_sntp_simple_get( &req, ip, timeout );
+	int ret;
+	if ((ret=_sntp_simple_get( &req, ip, timeout) ) != SNTP_STATUS(ok) )
+		return ret;
 	//struct timeval tv;
 	*tv = sntp_timediff_to_tv( req.timediff_abs );																	
+	if ( tv->tv_usec >= 500000 ){ // get closer to the 'real time', if only seconds are used
+		tv->tv_sec++;
+		tv->tv_usec -= 1000000;
+	}
 	if ( req.timediff_abs.time < req.timediff.time ){ // negative difference
 		tv->tv_sec = -tv->tv_sec;																	 
 		tv->tv_usec = -tv->tv_usec;																	 
 	}
-	return(0);
+	return(SNTP_STATUS(ok));
 }
 
 int sntp_simple_gettime( struct timeval *tv, in_addr_t ip, int timeout ){
 	sntp_request req;
-	_sntp_simple_get( &req, ip, timeout );
-	//struct timeval tv;
-	int r = gettimeofday(tv,0);
+	int ret;
+
+	if ((ret=_sntp_simple_get( &req, ip, timeout) ) != SNTP_STATUS(ok) )
+		return ret;
+	ret = gettimeofday(tv,0);
 	sntp_timeval stv;
 	stv.time = sntp_from_tv( *tv ).time + req.timediff.time;
 	*tv = sntp_to_tv( stv );
 
-	return(0);
+	return(SNTP_STATUS(ok));
 }
 
 
@@ -543,15 +556,22 @@ int _sntp( sntp_named *args ){
 }
   
 
-#if 0
+#ifndef TOTP_SNTP
 int main( int argc, char **argv ){
 
 	printf("ok\n");
-
-
-
-
+  char buf[32];
+  struct tm tmnow;
+  time_t tnow;
 	struct timeval tv,tvdiff;
+	struct timeval tv_akt; 
+
+	gettimeofday(&tv,0);
+	tnow = tv.tv_sec;
+	 localtime_r(&tnow,&tmnow);
+
+	prints( AC_BLUE "Local time: ", asctime_r( &tmnow, buf ), AC_N );
+
 
 	int ret = sntp_simple_gettimediff( &tvdiff, SNTP_IP(google), 1000 );
 
@@ -559,15 +579,12 @@ int main( int argc, char **argv ){
 
 	gettimeofday(&tv,0);
 
-	struct timeval tv_akt; 
 	tv_akt.tv_sec = tv.tv_sec+tvdiff.tv_sec;
 	tv_akt.tv_usec = tv.tv_usec+tvdiff.tv_usec;
 	printf("now sec: %u  usec: %u\n", tv_akt.tv_sec,tv_akt.tv_usec);
 	
-	time_t tnow = tv_akt.tv_sec;
+	tnow = tv_akt.tv_sec;
 
-  char buf[32];
-  struct tm tmnow;
   localtime_r(&tnow,&tmnow);
 
 	prints( AC_CYAN "Time: (UTC) Google ", asctime_r( &tmnow, buf ), AC_N );

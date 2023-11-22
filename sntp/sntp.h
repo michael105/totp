@@ -200,7 +200,7 @@ extern const sntp_msg sntp_kiss_code[];
 #define PORTNO 123
 
 #define SNTP_STATUS(s) ({ \
-		enum { ready=0, sent, kiss, errnum, received, bad, ok }; \
+		enum { ok=0, empty, ready, sent, kiss, errnum, received, bad }; \
 		s; })
 
 #define SNTP_MODE(m) ({ \

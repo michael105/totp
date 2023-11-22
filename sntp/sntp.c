@@ -271,7 +271,7 @@ int sntp_req_send( in_addr_t ip, sntp_request *req, int *sockfd ){
 		RETERR("Cannot send",ret);
 
 	req->status = SNTP_STATUS(sent); // on the way
-	return(0);
+	return(SNTP_STATUS(ok));
 }
 
 // subtract t2 from t1
@@ -535,7 +535,7 @@ int main( int argc, char **argv ){
 	tnow = tv.tv_sec;
 	 localtime_r(&tnow,&tmnow);
 
-	prints( AC_BLUE "Local time: ", asctime_r( &tmnow, buf ), AC_N );
+	prints( AC_LBLUE "Local time: ", asctime_r( &tmnow, buf ), AC_N );
 
 
 	int ret = sntp_simple_gettimediff( &tvdiff, SNTP_IP(google), 1000 );

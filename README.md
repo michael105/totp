@@ -6,6 +6,9 @@ Shows the current, and the next token. I was bored having to wait for the next t
 For copying to the xorg clipboard, xclip needs to be installed and within $PATH.
 (https://github.com/astrand/xclip)
 
+To display the tokens as popup within X, dzen can be used. 
+(https://github.com/robm/dzen)
+
 
 By default, the base32 secret is read from stdin,
 to prevent someone sneaking at the process list to be able

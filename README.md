@@ -43,7 +43,7 @@ options
  -b secret     : base32 secret 
  -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,
                  and erase all secrets.
-                 Default ist 5 minutes, -s 0 disables the timeout
+                 Default is 5 minutes, -s 0 disables the timeout
  -q N[h|m]     : quit after N seconds (minutes, hours)
  -n source     : use ntpc time, source one of a,c,f,g,m
                  (apple,cloudflare,facebook,google,microsoft)
@@ -52,6 +52,7 @@ options
  -X EXE ARG .. : display tokens with dzen2 / another program
                  EXE is started and piped to, with all following arguments
                  example: totp -X dzen2 -w 200 -fg white -bg black
+ -x            : copy current token to the xserver clipboard (needs xclip)
 
  -h            : Show this help
 

@@ -213,6 +213,28 @@ void xclip(uint token){
 	close(fd[1]);
 }
 
+
+void dzen(int token, int nexttoken, int seconds){
+	static int zenfd[2];
+	if ( !zenfd[0] ){	
+		pipe(zenfd);
+		pid_t pid = fork();
+		if ( pid==0 ){
+			erasestack(2000); // shoot with cannons. why not. 
+			close(0);
+			close(zenfd[1]);
+			dup(zenfd[0]);
+			execlp("dzen2","dzen2","-w","200",NULL);
+			write(2,"Error (dzen2 not found)\n\n",25);
+			exit_erase(2000,1);
+		}
+		close(zenfd[0]);
+	}
+	dprintf(zenfd[1],"%d (%d) %d\n",token,seconds,nexttoken);
+	//close(fd[1]);
+}
+
+
 // convert number to seconds, with d,h,m modifiers
 long stol(const char* s){
 	if ( !s )
@@ -254,7 +276,7 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-#define OPTIONS s,q,I,r,p,n
+#define OPTIONS s,q,I,r,p,n,z
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
@@ -351,6 +373,10 @@ int main(int argc, char **argv, char **envp){
 				case 'r':
 					SETOPT(r);
 					break;
+				case 'z':
+					SETOPT(z);
+					break;
+
 # ifdef TOTP_SNTP
 //#error dsf
 				case 'n':
@@ -557,6 +583,9 @@ LOOP:
 									  // however, in each case, also the waitloop,
 									  // will take at least until the next 30 seconds period begins
 									  // (at least).
+
+			if ( OPT(z) )
+				dzen(r,r2,29-(int)seconds);
 
 			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-(int)seconds);
 			if ( timeout && timeoutsec<60 )

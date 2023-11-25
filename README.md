@@ -12,7 +12,7 @@ To display the tokens as popup within X, dzen can be used.
 
 By default, the base32 secret is read from stdin,
 to prevent someone sneaking at the process list to be able
-to read secrets. (process arguments are shown)
+to read secrets. (process arguments might be stored within the shell history)
 
 
 
@@ -47,7 +47,7 @@ options
  -q N[h|m]     : quit after N seconds (minutes, hours)
  -n source     : use ntpc time, source one of a,c,f,g,m
                  (apple,cloudflare,facebook,google,microsoft)
-                 microsoft will crash or point to apple - type jicrosoft or icrosoft instead
+                 microsoft might crash or point to apple(!) - type (j)icrosoft or icrosoft instead
  -z            : display tokens with dzen2
  -X EXE ARG .. : display tokens with dzen2 / another program
                  EXE is started and piped to, with all following arguments

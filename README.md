@@ -47,7 +47,7 @@ options
                  microsoft will crash or point to apple - type jicrosoft or icrosoft instead
  -z            : display tokens with dzen2
  -X EXE ARG .. : display tokens with dzen2 / another program
-                 EXECUTABLE is started and piped to, with all following arguments
+                 EXE is started and piped to, with all following arguments
                  example: totp -X dzen2 -w 200 -fg white -bg black
 
  -h            : Show this help

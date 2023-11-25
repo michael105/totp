@@ -183,7 +183,7 @@ void usage(){
 		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
 		" -z            : display tokens with dzen2 \n"
 		" -X EXE ARG .. : display tokens with dzen2 / another program\n"
-		"                 EXECUTABLE is started and piped to, with all following arguments\n"
+		"                 EXE is started and piped to, with all following arguments\n"
 		"                 example: totp -X dzen2 -w 200 -fg white -bg black\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"

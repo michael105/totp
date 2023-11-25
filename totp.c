@@ -7,9 +7,9 @@ SHRINKELF
 #STRIPFLAG
 
 COMPILE printf itodec memcpy bzero memset write sleep \
-			  select tcgetattr tcsetattr signal _execlp fmtp snprintf fmtl atol \
-			  localtime_r mktime execvp sprintf
-COMPILE fmtp open error MLVALIST strncpy
+			  select tcgetattr tcsetattr signal _execlp snprintf atol \
+			  localtime_r mktime execvp 
+COMPILE fmtp fmtl fmtd open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
 	source sntp/sntp.c
@@ -175,7 +175,7 @@ void usage(){
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 		" -n source     : use ntpc time, source one of a,c,f,g,m\n"
 		"                 (apple,cloudflare,facebook,google,microsoft)\n"
-		"                 careful, microsoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
+		"                 (m)icrosoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"
 		"                 and erase all secrets.\n"
@@ -683,7 +683,7 @@ LOOP:
 					break;
 				case 'n':
 				case '\n':
-					P("Copy Next");  
+					P("Copy Next   ");  
 					left(16);
 					xclip(r2);
 					clsec = 3;
@@ -692,11 +692,8 @@ LOOP:
 				sleep(1); // aborted by sigalarm
 			seconds ++;
 
-			if ( clsec ){
-				if ( clsec==1 )
-					P("\e[2K");
-				clsec --;
-			}
+			if ( clsec && !--clsec )
+					P("\e[2K"); // clear line
 		}
 		up();
 	};

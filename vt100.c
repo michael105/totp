@@ -76,8 +76,8 @@ void right(uint cols){
 }
 
 void left(uint cols){
-	char buf[16];
-	int l = snprintf(buf,16,"\e[%uD",cols);
+	char buf[16];// = {  '\033', '[', 
+	int l = snprintf(buf,16,"\033[%dD",cols);
 	write(1,buf,l);
 }
 

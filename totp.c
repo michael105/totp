@@ -181,6 +181,7 @@ void usage(){
 		"                 and erase all secrets.\n"
 		"                 Default is 5 minutes, -s 0 disables the timeout\n"
 		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
+		" -z            : display tokens with dzen2 \n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
@@ -224,7 +225,7 @@ void dzen(int token, int nexttoken, int seconds){
 			close(0);
 			close(zenfd[1]);
 			dup(zenfd[0]);
-			execlp("dzen2","dzen2","-w","200",NULL);
+			execlp("dzen2","dzen2","-w","200","-h","30","-fn", "-*-*-*-*-*-*-18-","-fg","white", NULL);
 			write(2,"Error (dzen2 not found)\n\n",25);
 			exit_erase(2000,1);
 		}

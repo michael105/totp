@@ -52,13 +52,15 @@ options
 
  -h            : Show this help
 
-misc 2023, GPL
+misc147 2023, GPL
 github.com/michael105/totp
 </pre>
 
 
 
-miSc 2023, Michael Myer, GPL
+miSc147 2023, GPL
 
-www.github.com/michael105/totp
+www.codeberg.org/misc1/totp
+
+
 

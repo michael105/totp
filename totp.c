@@ -8,7 +8,7 @@ SHRINKELF
 
 COMPILE printf itodec memcpy bzero memset write sleep \
 			  select tcgetattr tcsetattr signal _execlp fmtp snprintf fmtl atol \
-			  localtime_r mktime 
+			  localtime_r mktime execvp
 COMPILE fmtp open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
@@ -182,6 +182,9 @@ void usage(){
 		"                 Default is 5 minutes, -s 0 disables the timeout\n"
 		" -q N[h|m]     : quit after N seconds (minutes, hours)\n"
 		" -z            : display tokens with dzen2 \n"
+		" -X EXE ARG .. : display tokens with dzen2 / another program\n"
+		"                 EXECUTABLE is started and piped to, with all following arguments\n"
+		"                 example: totp -X dzen2 -w 200 -fg white -bg black\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
@@ -215,7 +218,7 @@ void xclip(uint token){
 }
 
 
-void dzen(int token, int nexttoken, int seconds){
+void dzen(int token, int nexttoken, int seconds, char **pexec){
 	static int zenfd[2];
 	if ( !zenfd[0] ){	
 		pipe(zenfd);
@@ -225,8 +228,18 @@ void dzen(int token, int nexttoken, int seconds){
 			close(0);
 			close(zenfd[1]);
 			dup(zenfd[0]);
-			execlp("dzen2","dzen2","-w","200","-h","30","-fn", "-*-*-*-*-*-*-18-","-fg","white", NULL);
+// dzen2 exec
+			if ( ! pexec ){
+			execlp("dzen2",
+					"dzen2","-w","200","-h","30",
+					"-fn", "-*-*-*-*-*-*-18-","-fg","white", 
+				NULL);
+
 			write(2,"Error (dzen2 not found)\n\n",25);
+			} else {
+				execvp( *pexec, pexec );
+				eprintsl("Error, couldn't execute: ",*pexec);
+			}
 			exit_erase(2000,1);
 		}
 		close(zenfd[0]);
@@ -300,6 +313,7 @@ int main(int argc, char **argv, char **envp){
 	in_addr_t sntp_ip = 0;
 	// would also be possible: uint32 - caculate with overflow.
 	// -30 = (UINTMAX-30) - UINTMAX
+	char **pexec = 0;
 	
 	int timeout = 5*60; // default 5 minutes timeout
 	SETOPT(s);
@@ -374,6 +388,10 @@ int main(int argc, char **argv, char **envp){
 				case 'r':
 					SETOPT(r);
 					break;
+				case 'X':
+					//*argv++;
+					pexec = argv+1;
+					while ( *++argv ){};
 				case 'z':
 					SETOPT(z);
 					break;
@@ -586,7 +604,7 @@ LOOP:
 									  // (at least).
 
 			if ( OPT(z) )
-				dzen(r,r2,29-(int)seconds);
+				dzen(r,r2,29-(int)seconds,pexec);
 
 			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-(int)seconds);
 			if ( timeout && timeoutsec<60 )

@@ -185,6 +185,7 @@ void usage(){
 		" -X EXE ARG .. : display tokens with dzen2 / another program\n"
 		"                 EXE is started and piped to, with all following arguments\n"
 		"                 example: totp -X dzen2 -w 200 -fg white -bg black\n"
+		" -x            : copy current token via xclip to the clipboard\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
@@ -296,7 +297,7 @@ unsigned int tonum(const char *c){
 
 int main(int argc, char **argv, char **envp){
 
-#define OPTIONS s,q,I,r,p,n,z
+#define OPTIONS s,q,I,r,p,n,z,x
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
@@ -400,6 +401,9 @@ int main(int argc, char **argv, char **envp){
 					while ( *++argv ){};
 				case 'z':
 					SETOPT(z);
+					break;
+				case 'x':
+					SETOPT(x);
 					break;
 
 # ifdef TOTP_SNTP
@@ -601,6 +605,8 @@ LOOP:
 		asm volatile("nop":: "r"(r3)); // prevent compiler optimizations
 		erasestack(2000);
 
+		if ( OPT(x) )
+			xclip(r);
 
 		printf(AC_NORM"%06d      %06d\n\n", r,r2);
 

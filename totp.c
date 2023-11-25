@@ -8,7 +8,7 @@ SHRINKELF
 
 COMPILE printf itodec memcpy bzero memset write sleep \
 			  select tcgetattr tcsetattr signal _execlp fmtp snprintf fmtl atol \
-			  localtime_r mktime execvp
+			  localtime_r mktime execvp sprintf
 COMPILE fmtp open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
@@ -238,7 +238,13 @@ void dzen(int token, int nexttoken, int seconds, char **pexec){
 			write(2,"Error (dzen2 not found)\n\n",25);
 			} else {
 				execvp( *pexec, pexec );
-				eprintsl("Error, couldn't execute: ",*pexec);
+				//eprintsl("Error, couldn't execute: ",*pexec);
+				fprintf(stderr,"Error, couldn't execute: ");
+				while (*pexec){
+					fprintf( stderr, *pexec );
+					*pexec++;
+				}
+				fprintf(stderr,"\n");
 			}
 			exit_erase(2000,1);
 		}

@@ -56,8 +56,8 @@ options
 
  -h            : Show this help
 
-misc147 2023, GPL
-github.com/michael105/totp
+misc147 2023, GPL - misc9@posteo.net (subtract 2 of the number)
+github.com/michael105/totp 
 </pre>
 
 

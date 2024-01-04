@@ -251,7 +251,7 @@ void dzen(int token, int nexttoken, int seconds, char **pexec){
 		}
 		close(zenfd[0]);
 	}
-	dprintf(zenfd[1],"%d (%d) %d\n",token,seconds,nexttoken);
+	dprintf(zenfd[1],"%06d (%d) %06d\n",token,seconds,nexttoken);
 	//close(fd[1]);
 }
 

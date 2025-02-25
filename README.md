@@ -64,7 +64,7 @@ options
 
 
 
-misc147 2023-2025, GPL - miscNNN@disroot.org, replace N with the result of three times half of hundred, subtract 3.
+misc147 2023-2025, GPL - miscNNN@disroot.org, replace NNN with the result of three times half of hundred, subtract 3.
 
 github.com/michael105/totp 
 

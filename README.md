@@ -57,15 +57,13 @@ options
 
  -h            : Show this help
 
-misc147 2023, GPL - misc9@posteo.net (subtract 2 of the number)
-github.com/michael105/totp 
 </pre>
 
 
 
-miSc147 2023, GPL
+misc147 2023-2025, GPL - miscNNN@disroot.org, replace N with the result of three times half of hundred, subtract 3.
 
-www.codeberg.org/misc1/totp
+github.com/michael105/totp 
 
 
 

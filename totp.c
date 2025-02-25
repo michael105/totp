@@ -189,8 +189,8 @@ void usage(){
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		"\n"
-		"misc147, 2023, GPL\n"
-		"www.codeberg.org/misc1/totp\n"
+		"misc147, 2023-2025, GPL\n"
+		"www.github.com/michael105/totp\n"
 	);
 	exit(1);
 }

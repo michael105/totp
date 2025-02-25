@@ -1,12 +1,12 @@
 totp 2fa token generator, including a sntp time syncronization client.
 
 
-Shows the current, and the next token. I was bored having to wait for the next timestep.
+Displays the current and the next token. I was bored having to wait for the next timestep.
 
 For copying to the xorg clipboard, xclip needs to be installed and within $PATH.
 (https://github.com/astrand/xclip)
 
-To display the tokens as popup within X, dzen can be used. 
+To display the tokens as popup within xorg/.., dzen can be used. 
 (https://github.com/robm/dzen)
 
 

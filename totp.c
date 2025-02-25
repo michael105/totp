@@ -244,7 +244,7 @@ void dzen(int token, int nexttoken, int seconds, char **pexec){
 				//eprintsl("Error, couldn't execute: ",*pexec);
 				fprintf(stderr,"Error, couldn't execute: ");
 				while (*pexec){
-					fprintf( stderr, *pexec );
+					write( stderr, *pexec, strlen( *pexec ) );
 					*pexec++;
 				}
 				fprintf(stderr,"\n");

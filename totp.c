@@ -22,6 +22,8 @@ return
 /* 
  totp generation.
 
+ misc 2023-2025, GPL
+
  */
 
 #ifndef MLIB

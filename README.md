@@ -19,13 +19,16 @@ to read secrets. (process arguments might be stored within the shell history)
 compile with 'make'.
 
 
-This needs currently 64bit instructions,
-and is tested only with linux.
+Currently 64bit instructions are needed,
+tested at linux only.
 
 
 If the sntp time server client isn't used,
 either the system time needs to be set to UTC,
 or the according time difference has to be supplied. (e.g. totp -d +2h)
+
+
+
 
 
 <pre>
@@ -46,8 +49,8 @@ options
                  and erase all secrets.
                  Default is 5 minutes, -s 0 disables the timeout
  -q N[h|m]     : quit after N seconds (minutes, hours)
- -n source     : use ntpc time, source one of a,c,f,g,m
-                 (apple,cloudflare,facebook,google,microsoft)
+ -n source     : use ntpc time, source one of a,c,f,g,i
+                 (apple,cloudflare,facebook,google,m(i)crosoft)
                  microsoft might crash or point to apple(!) - type (j)icrosoft or icrosoft instead
  -z            : display tokens with dzen2
  -X EXE ARG .. : display tokens with dzen2 / another program

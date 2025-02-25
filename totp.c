@@ -174,7 +174,7 @@ void usage(){
 		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
 		" -n source     : use ntpc time, source one of a,c,f,g,m\n"
-		"                 (apple,cloudflare,facebook,google,microsoft)\n"
+		"                 (apple,cloudflare,facebook,google,icrosoft)\n"
 		"                 (m)icrosoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"

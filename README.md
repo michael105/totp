@@ -1,4 +1,4 @@
-totp 2fa token generator.
+totp 2fa token generator, including a sntp time syncronization client.
 
 
 Shows the current, and the next token. I was bored having to wait for the next timestep.
@@ -23,7 +23,8 @@ This needs currently 64bit instructions,
 and is tested only with linux.
 
 
-The system time needs either to be set to UTC,
+If the sntp time server client isn't used,
+either the system time needs to be set to UTC,
 or the according time difference has to be supplied. (e.g. totp -d +2h)
 
 

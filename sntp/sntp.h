@@ -2,10 +2,11 @@
  * simple ntp client (library), oriented at rfc4330 (sntp memorandum), rfc5905,
  * rfc9109 (port randomization)  . (rfc8915 - nts - would need ssl layer)
  
+this is scratched together from a more complex sntp client implementation,
+It just works in the special context of otp.
 
+GPL, 2025, misc
 
- Work in progress -
- currently in git/sntp / git/ntpc	
 
 
  */

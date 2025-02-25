@@ -173,7 +173,7 @@ void usage(){
 		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/days to the current time,\n"
 		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
-		" -n source     : use ntpc time, source one of a,c,f,g,m\n"
+		" -n source     : use ntpc time, source one of a,c,f,g,i\n"
 		"                 (apple,cloudflare,facebook,google,icrosoft)\n"
 		"                 (m)icrosoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
 		" -b secret     : base32 secret \n"

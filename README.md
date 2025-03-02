@@ -57,7 +57,7 @@ options
                  EXE is started and piped to, with all following arguments
                  example: totp -X dzen2 -w 200 -fg white -bg black
  -x            : copy current token to the xserver clipboard (needs xclip)
-
+ -v            : Display version info
  -h            : Show this help
 
 </pre>

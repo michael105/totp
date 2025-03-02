@@ -1,4 +1,4 @@
-totp 2fa token generator, including a sntp time syncronization client.
+totp 2fa token generator, including a sntp network time server syncronization client.
 
 
 Displays the current and the next token. I was bored having to wait for the next timestep.

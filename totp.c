@@ -26,6 +26,8 @@ return
 
  */
 
+#define VERSION "1.0"
+
 #ifndef MLIB
 #include <stdio.h>
 #include <unistd.h>
@@ -190,7 +192,9 @@ void usage(){
 		" -x            : copy current token via xclip to the clipboard\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
+		" -v            : Display version\n"
 		"\n"
+		"version " VERSION "\n"
 		"misc147, 2023-2025, GPL\n"
 		"www.github.com/michael105/totp\n"
 	);
@@ -485,6 +489,9 @@ int main(int argc, char **argv, char **envp){
 						diffsecs += t-now;
 					} else usage();
 					break;
+				case 'v':
+					printf("totp, misc147 (github.com/michael105/totp), version " VERSION "\n" );
+					exit(0);
 
 				default:
 				case ('h'):

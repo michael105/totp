@@ -1,7 +1,8 @@
 totp 2fa token generator, including a sntp network time server syncronization client.
 
 
-Displays the current and the next token. I was bored having to wait for the next timestep.
+Displays the current and the next token. I was bored having to wait for the next timestep,
+and I'm using this myself for several years now.
 
 For copying to the xorg clipboard, xclip needs to be installed and within $PATH.
 (https://github.com/astrand/xclip)
@@ -12,7 +13,7 @@ To display the tokens as popup within xorg/.., dzen can be used.
 
 By default, the base32 secret is read from stdin,
 to prevent someone sneaking at the process list to be able
-to read secrets. (process arguments might be stored within the shell history)
+to read secrets. (process arguments might also be stored in the shell history)
 
 
 
@@ -61,6 +62,18 @@ options
  -h            : Show this help
 
 </pre>
+
+
+
+NOTES
+
+If xclip, dzen or another program are used, you need to make sure, 
+they are within PATH and it isn't possible to put there another script/binary.
+
+It is more secure to use the option -X and provide an sbolute path,
+or to change the hardcoded binary names into absolute paths.
+
+The binary names are defined in config.h
 
 
 

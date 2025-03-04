@@ -26,7 +26,8 @@ return
 
  */
 
-#define VERSION "1.0"
+#include "config.h"
+
 
 #ifndef MLIB
 #include <stdio.h>
@@ -87,7 +88,7 @@ static inline void __attribute__((always_inline))exit_erase(ulong size, int exit
 	exit(exitcode);
 }
 
-// validate, convert lower to upper
+// validate base32 secret, convert lower to upper
 int validate_base32(uchar *buf, uint len){
 	
 	if ( len&0xf )
@@ -109,6 +110,7 @@ int validate_base32(uchar *buf, uint len){
 }
 
 
+// convert base32 to binary (secret)
 int base32d( uchar* to, uchar* from, uint len ){
 	uchar* pbuf = from;
 	uchar* pobuf = to;
@@ -146,7 +148,7 @@ int base32d( uchar* to, uchar* from, uint len ){
 	return( pobuf - to );
 }
 
-
+// otp genration
 uint totp( uint8_t *key, uint keylen, uint64_t step ){
 	uint8_t result[20];
 
@@ -177,9 +179,11 @@ void usage(){
 		" -d [-]N[d|h|m]: add [-]N seconds/minutes/hours/days to the current time,\n"
 		"                 depending on the optional modifier\n"
 		"                 d=day,h=hour,m=minute. Can be supplied several times, or with -t/-T\n"
+#ifdef TOTP_SNTP
 		" -n source     : use ntpc time, source one of a,c,f,g,i\n"
 		"                 (apple,cloudflare,facebook,google,icrosoft)\n"
 		"                 (m)icrosoft will crash or point to apple - type jicrosoft or icrosoft instead\n"
+#endif
 		" -b secret     : base32 secret \n"
 		" -s N[h|m]     : Set timeout, stop after N seconds (minutes, hours) without keypress,\n"
 		"                 and erase all secrets.\n"
@@ -211,11 +215,11 @@ void xclip(uint token){
 	pipe(fd);
 	pid_t pid = fork();
 	if ( pid==0 ){
-		erasestack(2000); // shoot with cannons. why not. 
+		erasestack(2000); // shoot with cannons. erase secrets.
 		close(0);
 		close(fd[1]);
 		dup(fd[0]);
-		execlp("xclip","xclip",NULL);
+		execlp(XCLIP_BIN,"xclip",NULL);
 		write(2,"Error (xclip not found)\n\n",25);
 		exit_erase(2000,1);
 	}
@@ -237,7 +241,7 @@ void dzen(int token, int nexttoken, int seconds, char **pexec){
 			dup(zenfd[0]);
 // dzen2 exec
 			if ( ! pexec ){
-			execlp("dzen2",
+			execlp(DZEN_BIN,
 					"dzen2","-w","200","-h","30",
 					"-fn", "-*-*-*-*-*-*-18-","-fg","white", 
 				NULL);

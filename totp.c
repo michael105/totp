@@ -307,7 +307,7 @@ int main(int argc, char **argv, char **envp){
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
-	uint32_t opts;
+	uint32_t opts = 0;
 
 	uint8_t in[64],k[64];
 	uchar *p_in = in;
@@ -576,8 +576,16 @@ SETTIMER:
 
 #define X(y) #y
 //#define X(y) AC_LGREY #y AC_GREY
+	char tbuf[32];
 
 LOOP:
+
+	now = time(0) + diffsecs;
+	struct tm tmnow;
+	
+	strftime( tbuf, 32, "UTC: %Y/%m/%d %H:%M:%S\n", localtime_r( &now, &tmnow ) );
+
+	P( tbuf );
 
 	if ( OPT(I) )
 		P( AC_GREY "Ctrl+C to quit\n" );

@@ -1,5 +1,5 @@
 
-#define VERSION "1.1"
+#define VERSION "1.1-dev"
 
 // compile with sntp client
 #define TOTP_SNTP

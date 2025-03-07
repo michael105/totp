@@ -521,7 +521,7 @@ int main(int argc, char **argv, char **envp){
 
 		tv_akt.tv_sec = tv.tv_sec+tvdiff.tv_sec;
 		tv_akt.tv_usec = tv.tv_usec+tvdiff.tv_usec;
-		printf("now sec: %u  usec: %u\n", tv_akt.tv_sec,tv_akt.tv_usec);
+		printf("now sec: %lu  usec: %lu\n", tv_akt.tv_sec,tv_akt.tv_usec);
 
 		time_t tnow = tv_akt.tv_sec;
 

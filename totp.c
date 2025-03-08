@@ -424,7 +424,7 @@ int main(int argc, char **argv, char **envp){
 					int c = argv[0][0];
 					c = (c-97)>>1;
 					sntp_ip = SNTP_IP(c);
-					v("c: %d ip: %x\n",c,sntp_ip);
+					//v("c: %d ip: %x\n",c,sntp_ip);
 					break;
 # endif
 
@@ -621,7 +621,8 @@ LOOP:
 		// erase secrets
 		uchar kt[64];
 		base32d(kt,(uchar*)"MBMR24FPG5IRTR25OSUJ3ABJ6NE5UAPP",32);
-		*(ulong*)k^=(ulong)&klen;
+		//*(ulong*)k^=(ulong)&klen;
+		asm("xorq %1,%0" : "+r"(*(ulong*)k) : "r"(&klen) );
 		int r3 = totp(kt,20,t);
 		asm volatile("nop":: "r"(r3)); // prevent compiler optimizations
 		erasestack(2000);

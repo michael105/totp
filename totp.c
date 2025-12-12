@@ -424,7 +424,7 @@ int main(int argc, char **argv, char **envp){
 					int c = argv[0][0];
 					c = (c-97)>>1;
 					sntp_ip = SNTP_IP(c);
-					//v("c: %d ip: %x\n",c,sntp_ip);
+					//mv("c: %d ip: %x\n",c,sntp_ip);
 					break;
 # endif
 

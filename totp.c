@@ -406,9 +406,18 @@ int main(int argc, char **argv, char **envp){
 		// getting segfaults, when assigning "+r"(n), "b"(n), .. (?)
 		exit(n);
 	}
+
+	char *opt;
+	void incargv(){
+		*argv++;
+		if ( *argv == 0 ){
+			fprintf(stderr,"Missing argument : -%c\n",*opt);
+			exit(1);
+		}
+	}
 	
 	while ( *++argv && ( **argv == '-' ) ){
-		for ( char *opt = *argv +1; *opt; *opt++ ){
+		for ( opt = *argv +1; *opt; *opt++ ){
 			switch (*opt) {
 				case 'I': 
 					SETOPT(I);
@@ -428,34 +437,36 @@ int main(int argc, char **argv, char **envp){
 					break;
 
 # ifdef TOTP_SNTP
-//#error dsf
 				case 'n':
 					SETOPT(n);
-					*argv++;
+					incargv();
 					int c = argv[0][0];
 					c = (c-97)>>1;
+					if ( c<0 || c>4 ){
+						fprintf(stderr,"bad argument for -n\n");
+						exit(1);
+					}
 					sntp_ip = SNTP_IP(c);
-					//mv("c: %d ip: %x\n",c,sntp_ip);
 					break;
 # endif
 
 
 				case 'p':
 					SETOPT(p);
-					*argv++;
+					incargv();
 					infd = open( *argv, O_RDONLY );
 					if ( infd<=0 )
 						error(1,errno,"Couldn't open %s\n",*argv);
 					break;
 				case 's':
 					SETOPT(s);
-					*argv++;
+					incargv();
 					timeout = stol(*argv);
 					break;
 				case 'q':
 					SETOPT(q);
 					DELOPT(s);
-					*argv++;
+					incargv();
 					timeout = stol(*argv);
 					break;
 				case 'c':
@@ -463,7 +474,7 @@ int main(int argc, char **argv, char **envp){
 					b32len = 16;
 					break;
 				case 'b':
-					*argv++;
+					incargv();
 					//p_in = (uchar*)*argv;
 					strncpy( (char*)in, *argv, 64 );
 					b32len = strlen((char*)p_in);
@@ -474,11 +485,11 @@ int main(int argc, char **argv, char **envp){
 					memset(*argv-3,0,b32len+3); // erase argv
 					break;
 				case 'd': // diff, in seconds
-					*argv++;
+					incargv();
 					diffsecs += stol(*argv);
 					break;
 				case 't':
-					*argv++;
+					incargv();
 					diffsecs += stol(*argv);
 					now = time(0);
 					diffsecs -= now;
@@ -488,7 +499,7 @@ int main(int argc, char **argv, char **envp){
 					now = time(0);
 					break;*/
 				case 'T':
-					*argv++;
+					incargv();
 					char *p = *argv;
 					struct tm tmnow;
 					now = time(0);

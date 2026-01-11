@@ -22,7 +22,7 @@ GPL, 2025, misc
  // and should be used as backup only. In general a physically close server should be preferred
 #define SNTP_IP(name) ({ enum {apple=0,cloudflare,facebook,google,microsoft };\
 		in_addr_t ips[] = {  0x7d0efd11, 0x1c89fa2, 0x7b1d8681, 0x23efd8, 0x9396514 };\
-		ips[name]; })
+		name<=microsoft?ips[name]:0; })
 
 #define SNTP_IP_GOOGLE
 #define SNTP_IP_APPLE

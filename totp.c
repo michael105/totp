@@ -22,7 +22,7 @@ return
 /* 
  totp generation.
 
- misc 2023-2025, GPL, github.com/michael105/totp
+ misc 2023-2026, GPL, github.com/michael105/totp
 
  */
 

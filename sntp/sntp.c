@@ -185,8 +185,21 @@ struct timeval sntp_timediff_to_tv( sntp_timeval ltv ){
 #error need 64bit
 #endif
   struct timeval tv;
-  tv.tv_sec = ltv.seconds;// - SNTP_TIMESTAMP_DELTA;
-  tv.tv_usec = (uint)((ulong)( (ulong)ltv.fraction * 1000000UL ) / (ulong)(UINT_MAX));
+  //tv.tv_sec = ltv.seconds;// - SNTP_TIMESTAMP_DELTA;
+  //tv.tv_usec = (uint)((ulong)( (ulong)ltv.fraction * 1000000UL ) / (ulong)(UINT_MAX));
+  // Treat the 64-bit time as a signed integer
+  int64_t signed_time = (int64_t)ltv.time;
+  
+  // Arithmetically shift right by 32 to get the seconds part.
+  // This preserves the sign bit, correctly handling negative differences.
+  tv.tv_sec = signed_time >> 32;
+  
+  // Extract the 32-bit fractional part
+  uint32_t fraction = (uint32_t)signed_time;
+  
+  // Convert fraction to microseconds
+  tv.tv_usec = (uint32_t)(((uint64_t)fraction * 1000000ULL) / 0x100000000ULL);
+  
   return(tv);
 }
 
@@ -346,6 +359,11 @@ int sntp_req_handle( sntp_request *r ){
     (110 is timeout - convention and norm say "connection timed out" rotfl
 	  111 - Connection refused
 	  112 - Host down )
+
+The basic idea is to be able to send several sntp packets in parallel,
+and save the answers for later processing.
+Having the least possible time deviation, and compare them
+between replies of several servers.
 */
 int sntp_req_wait( sntp_request reqs[], int reqnum, int waitnum, int sockfd, int timeout ){ 
 	DBG("req_wait 1\n");

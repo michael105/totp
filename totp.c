@@ -7,8 +7,8 @@ SHRINKELF
 #STRIPFLAG
 
 COMPILE printf itodec memcpy bzero memset write sleep \
-			  select tcgetattr tcsetattr signal _execlp snprintf atol \
-			  localtime_r mktime execvp 
+			  select tcgetattr tcsetattr signal execlp snprintf atol \
+			  gmtime_r mktime execvp 
 COMPILE fmtp fmtl fmtd open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
@@ -57,7 +57,8 @@ typedef unsigned long ulong;
 #define W(s) write(2,s,sizeof(s))
 #define P(s) write(1,s,sizeof(s))
 #define V(s) write(1,s,sizeof(s))
-#define v(fmt,...) printf(fmt,__VA_ARGS__)
+#define v(fmt,...) { if ( verbose>0 ) printf(fmt,__VA_ARGS__); }
+#define vv(fmt,...) { if ( verbose>1 ) v(fmt,__VA_ARGS__);  }
 
 #define SHA1HANDSOFF
 #include "sha1/sha1.c"
@@ -91,7 +92,7 @@ static inline void __attribute__((always_inline))exit_erase(ulong size, int exit
 // validate base32 secret, convert lower to upper
 int validate_base32(uchar *buf, uint len){
 	
-	if ( len&0xf )
+	if ( (len&0xf) || (len==0) )
 		return(0);
 	
 	for ( int a = 0; a<len; a++ ){
@@ -171,6 +172,7 @@ void usage(){
 	W( "totp [-t time] [-T time] [-d diff] [-b secret] [-p pipe] [-h]   Calculate 2fa otp tokens.\n"
 		"\n"
 		"options\n"
+		" -v            : Increase verbosity.\n"
 		" -I            : No interactive mode, read the secret from stdin\n"
 		" -r            : read the secret from a pipe to stdin\n"
 		" -p pipename   : read the secret from a named pipe, or a subshell\n"
@@ -194,9 +196,10 @@ void usage(){
 		"                 EXE is started and piped to, with all following arguments\n"
 		"                 example: totp -X dzen2 -w 200 -fg white -bg black\n"
 		" -x            : copy current token via xclip to the clipboard\n"
+		" -c            : Test with a predefined totp secret\n"
 //		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
-		" -v            : Display version\n"
+		" -V            : Display version\n"
 		"\n"
 		"version " VERSION "\n"
 		"misc147, 2023-2025, GPL\n"
@@ -312,6 +315,7 @@ int main(int argc, char **argv, char **envp){
 #define DELOPT(opt) { enum { OPTIONS }; opts&= ~(1<<opt); }
 #define OPT(opt) ({ enum { OPTIONS }; opts&(1<<opt); })
 	uint32_t opts = 0;
+	int verbose = 1; // default 1 
 
 	uint8_t in[64],k[64];
 	uchar *p_in = in;
@@ -372,7 +376,13 @@ int main(int argc, char **argv, char **envp){
 				cllcright();
 				P("XXX\n");
 			}
-
+			if ( b32len == 1 && *in == 't' ){
+				memcpy(in,(uchar*)"JBSWY3DPEHPK3PXP",16);
+				b32len = 16;
+				P("Using test secret\n");
+				return; // this is valid..
+			}
+			
 			if ( validate_base32(in,b32len) )
 				return;
 			W("Invalid base32 secret\n");
@@ -481,7 +491,7 @@ int main(int argc, char **argv, char **envp){
 					char *p = *argv;
 					struct tm tmnow;
 					now = time(0);
-					localtime_r(&now,&tmnow);
+					gmtime_r(&now,&tmnow);
 					if (!*p)
 						usage();
 					if ( p[2] == ':' ){
@@ -494,6 +504,9 @@ int main(int argc, char **argv, char **envp){
 					} else usage();
 					break;
 				case 'v':
+					verbose++;
+					break;
+				case 'V':
 					printf("totp, misc147 (github.com/michael105/totp), version " VERSION "\n" );
 					exit(0);
 
@@ -508,7 +521,7 @@ int main(int argc, char **argv, char **envp){
 	// init
 # ifdef TOTP_SNTP
 	if ( sntp_ip ){
-		v("Get sntp timediff, ip: %x\n",sntp_ip);
+		vv("Get sntp timediff, ip: %x\n",sntp_ip);
 		struct timeval tvdiff,tv,tv_akt;
 		int ret = sntp_simple_gettimediff( &tvdiff, sntp_ip, 1000 );
 		if ( ret ){
@@ -521,15 +534,20 @@ int main(int argc, char **argv, char **envp){
 
 		tv_akt.tv_sec = tv.tv_sec+tvdiff.tv_sec;
 		tv_akt.tv_usec = tv.tv_usec+tvdiff.tv_usec;
-		printf("now sec: %lu  usec: %lu\n", tv_akt.tv_sec,tv_akt.tv_usec);
+		vv("now sec: %lu  usec: %lu\n", tv_akt.tv_sec,tv_akt.tv_usec);
 
 		time_t tnow = tv_akt.tv_sec;
+		time_t tsys = tv.tv_sec;
 
 		char buf[32];
-		struct tm tmnow;
-		localtime_r(&tnow,&tmnow);
+		struct tm tmnow, tmnowloc, tmsys;
+		gmtime_r(&tnow,&tmnow);
+		localtime_r(&tnow,&tmnowloc);
+		gmtime_r(&tsys,&tmsys);
 
-		v( AC_CYAN "Time: (UTC) %s%s\n", asctime_r( &tmnow, buf ), AC_N );
+		v( AC_CYAN "Time: (UTC) %s%s", asctime_r( &tmnow, buf ), AC_N );
+		v(         "Local:      %s%s", asctime_r( &tmnowloc, buf ), AC_N );
+		v(         "System:     %s%s", asctime_r( &tmsys, buf ), AC_N );
 	}
 # endif
 
@@ -587,7 +605,7 @@ LOOP:
 	now = time(0) + diffsecs;
 	struct tm tmnow;
 	
-	strftime( tbuf, 32, "UTC: %Y/%m/%d %H:%M:%S\n", localtime_r( &now, &tmnow ) );
+	strftime( tbuf, 32, "UTC: %Y/%m/%d %H:%M:%S\n", gmtime_r( &now, &tmnow ) );
 
 	P( tbuf );
 

@@ -173,6 +173,7 @@ void usage(){
 		"\n"
 		"options\n"
 		" -v            : Increase verbosity.\n"
+		" -Q            : Quiet\n"
 		" -I            : No interactive mode, read the secret from stdin\n"
 		" -r            : read the secret from a pipe to stdin\n"
 		" -p pipename   : read the secret from a named pipe, or a subshell\n"
@@ -506,6 +507,9 @@ int main(int argc, char **argv, char **envp){
 				case 'v':
 					verbose++;
 					break;
+				case 'Q':
+					verbose=0;
+					break;
 				case 'V':
 					printf("totp, misc147 (github.com/michael105/totp), version " VERSION "\n" );
 					exit(0);
@@ -546,8 +550,8 @@ int main(int argc, char **argv, char **envp){
 		gmtime_r(&tsys,&tmsys);
 
 		v( AC_CYAN "Time: (UTC) %s%s", asctime_r( &tmnow, buf ), AC_N );
-		v(         "Local:      %s%s", asctime_r( &tmnowloc, buf ), AC_N );
-		v(         "System:     %s%s", asctime_r( &tmsys, buf ), AC_N );
+		vv(         "Local:      %s%s", asctime_r( &tmnowloc, buf ), AC_N );
+		vv(         "System:     %s%s", asctime_r( &tmsys, buf ), AC_N );
 	}
 # endif
 

@@ -443,7 +443,7 @@ int main(int argc, char **argv, char **envp){
 					int c = argv[0][0];
 					c = (c-97)>>1;
 					if ( c<0 || c>4 ){
-						fprintf(stderr,"bad argument for -n\n");
+						W("bad argument for -n\n");
 						exit(1);
 					}
 					sntp_ip = SNTP_IP(c);

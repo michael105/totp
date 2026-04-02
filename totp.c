@@ -672,6 +672,9 @@ LOOP:
 
 			if ( OPT(z) )
 				dzen(r,r2,29-(int)seconds,pexec);
+			if ( OPT(x) )
+				xclip(r);
+
 
 			printf( "\e[04D\e[1A"AC_YELLOW"%2d"AC_NORM,29-(int)seconds);
 			if ( timeout && timeoutsec<60 )

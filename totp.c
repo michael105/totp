@@ -223,7 +223,7 @@ void xclip(uint token){
 		close(0);
 		close(fd[1]);
 		dup(fd[0]);
-		execlp(XCLIP_BIN,"xclip",NULL);
+		execlp(XCLIP_BIN,"-in", "-selection", "clipboard",NULL);
 		write(2,"Error (xclip not found)\n\n",25);
 		exit_erase(2000,1);
 	}

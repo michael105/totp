@@ -8,7 +8,7 @@ SHRINKELF
 
 COMPILE printf itodec memcpy bzero memset write sleep \
 			  select tcgetattr tcsetattr signal execlp snprintf atol \
-			  gmtime_r mktime execvp 
+			  gmtime_r mktime execvp mlockall
 COMPILE fmtp fmtl fmtd open error MLVALIST strncpy
 
 if [ "$compile_sntp" = "1" ]; then
@@ -198,7 +198,6 @@ void usage(){
 		"                 example: totp -X dzen2 -w 200 -fg white -bg black\n"
 		" -x            : copy current token via xclip to the clipboard\n"
 		" -c            : Test with a predefined totp secret\n"
-//		" -s            : calculate current token, and exit\n"
 		" -h            : Show this help\n"
 		" -V            : Display version\n"
 		"\n"
@@ -310,6 +309,10 @@ unsigned int tonum(const char *c){
 
 
 int main(int argc, char **argv, char **envp){
+
+	// prevent swapping
+	if ( mlockall(MCL_CURRENT|MCL_FUTURE) )
+		W("Cannot lock memory");
 
 #define OPTIONS s,q,I,r,p,n,z,x
 #define SETOPT(opt) { enum { OPTIONS }; opts|= (1<<opt); }
@@ -654,7 +657,8 @@ LOOP:
 		// erase secrets
 		uchar kt[64];
 		base32d(kt,(uchar*)"MBMR24FPG5IRTR25OSUJ3ABJ6NE5UAPP",32);
-		//*(ulong*)k^=(ulong)&klen;
+		//*(ulong*)k^=(ulong)&klen; // gets optimized away, 
+		// the compiler is too smart 
 		asm("xorq %1,%0" : "+r"(*(ulong*)k) : "r"(&klen) );
 		int r3 = totp(kt,20,t);
 		asm volatile("nop":: "r"(r3)); // prevent compiler optimizations
